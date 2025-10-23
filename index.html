@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuyBar (10 Seviyeli Çift Hedef)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Koyu arkaplan */
+        }
+        .container {
+            min-height: 100vh;
+        }
+        
+        /* CYBERPUNK GLASS STİLİ */
+        .game-card {
+            /* max-w-sm kaldırıldı. Web'de dev gibi gözükmemesi için tekrar eklendi. */
+            max-width: 400px; 
+            width: 100%;
+            background-color: rgba(22, 27, 34, 0.7); /* %70 Opak Siyah */
+            backdrop-filter: blur(10px); 
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 8px rgba(57, 255, 20, 0.1); /* Neon Glow */
+            border: 1px solid rgba(57, 255, 20, 0.5); /* Neon Çerçeve */
+            transition: opacity 0.3s ease-in-out; /* Smooth geçiş için */
+            padding: 0; /* İç dolgu kaldırıldı */
+        }
+        
+        /* Dikey Ölçer (Meter) Stilleri */
+        .meter-container {
+            width: 50px; 
+            height: 300px; 
+            background-color: #000000;
+            border-radius: 8px;
+            position: relative;
+            margin: 0 auto;
+            border: 2px solid #2f333a;
+             /* Bar etrafına hafif glow eklenmesi */
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.1); 
+        }
+        
+        /* Hareket Eden Gösterge (Mum Gövdesi) */
+        #indicator {
+            position: absolute;
+            width: 30px; 
+            bottom: 0px; 
+            height: 0px; 
+            background-color: #ffcc00; 
+            left: 9px; 
+            transition: none; 
+            border-radius: 2px 2px 0 0; 
+        }
+
+        /* Hedef Bölgeler için genel stil */
+        .target-zone { 
+            position: absolute;
+            width: 100%;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.7; /* Neon hedefler için artırıldı */
+            border-radius: 4px;
+        }
+        
+        /* Hedef Bölge 1 (Primary - Neon Yeşil) */
+        #target-zone-1 {
+            background-color: rgba(57, 255, 20, 0.3); 
+            border: 1px solid #39ff14;
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.8);
+        }
+        /* Hedef Bölge 2 (Secondary/Bonus - Mavi) */
+        #target-zone-2 {
+            background-color: rgba(59, 130, 246, 0.3); 
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Durum Çubuğu Stili (Temiz ve Okunaklı) */
+        #status-display {
+            background-color: rgba(10, 10, 10, 0.7); 
+            border: 1px solid rgba(57, 255, 20, 0.2); 
+            box-shadow: 0 0 5px rgba(57, 255, 20, 0.1);
+        }
+        #current-level-display {
+            color: #39ff14; /* Neon Yeşil - Okunabilir */
+        }
+        .target-level-label {
+            color: #39ff14; /* Neon Yeşil */
+            text-shadow: 0 0 4px #39ff14; /* Hafif Glow */
+            font-weight: 700;
+        }
+
+        /* Durdur Butonu için AERO GLASS ve STİL */
+        .btn-action {
+            transition: all 0.3s ease;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 5px #000; 
+            
+            /* AERO GLASS/3D Efektleri */
+            background-color: rgba(57, 255, 20, 0.2); /* Daha şeffaf başlangıç */
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 
+                        inset 0 0 10px rgba(57, 255, 20, 0.5); /* İç neon gölge */
+            
+            /* Neon Vurgu */
+            color: #39ff14; 
+        }
+        .btn-action:hover {
+            transform: scale(1.02);
+            background-color: rgba(57, 255, 20, 0.35); /* Hafif opaklaşma */
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.8), /* Dış glow artır */
+                        inset 0 0 15px rgba(57, 255, 20, 0.7); /* İç glow artır */
+        }
+        .btn-action[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            background-color: rgba(57, 255, 20, 0.1);
+        }
+
+        /* Hata/Bitiş Butonları - Exit butonu da güncellendi */
+        #submit-score-btn, .bg-indigo-600, #exit-game-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+            backdrop-filter: blur(3px); /* Glass butona da hafif blur */
+        }
+
+        .text-green-400 { color: #39ff14; } /* Başlık Neon Yeşil */
+        .text-yellow-400 { color: #f5f542; } /* Sarımtırak Vurgu */
+        
+        /* Game Over Ekranı Geçişi */
+        .game-over-transition {
+             transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Yeni Pozisyon Kapatma Butonu (AERO GLASS KIRMIZI) */
+        #exit-game-btn {
+            background-color: rgba(239, 68, 68, 0.2); /* Kırmızı/Hata Rengi */
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4), inset 0 0 5px rgba(239, 68, 68, 0.3);
+            color: #ef4444; /* Kırmızı metin */
+        }
+        #exit-game-btn:hover {
+            background-color: rgba(239, 68, 68, 0.35);
+            transform: scale(1.02);
+        }
+        
+        /* SPLASH SCREEN İYİLEŞTİRMELERİ */
+        .splash-inner-content {
+            padding: 24px; /* Oyun içeriğindeki padding'i simüle etmek için */
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <div id="game-container" class="container flex flex-col items-center justify-center p-4">
+
+        <!-- GAME CARD GENİŞLİK SABİTLEMESİ KALDIRILDI VE DOLDURMASI İÇİN W-FULL EKLENDİ -->
+        <div class="game-card w-full rounded-xl relative"> 
+             <!-- BAŞLANGIÇ EKRANI -->
+            <div id="splash-screen" class="text-center relative">
+                
+                <!-- GÖRSEL ÇERÇEVEYİ TAM KAPLAMALI -->
+                <img src="https://cdn.prod.website-files.com/67fb1cd83af51c4fe96dacb2/68f2c18cc1ebefc22db2452a_dikey.png" alt="Cyberpunk Arkaplan Makinesi" class="w-full h-auto rounded-xl object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x400/0a0a0a/39ff14?text=CYBERPUNK+UI+BASE';">
+                
+                <!-- ÜSTTEKİ YAZI VE BUTONLAR GÖRSELİN ÜZERİNDE OLMALI -->
+                <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-between p-6">
+                    
+                    <!-- Kalan Hak Yazısı -->
+                    <p id="splash-info" class="text-sm text-gray-400 text-left mb-6 bg-black/40 p-2 rounded-lg self-start">
+                        Günlük Hakkınız: <span id="splash-daily-plays" class="text-yellow-400">0</span>
+                    </p>
+
+                    <!-- Action Button -->
+                    <button id="action-button" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg text-2xl" onclick="startGame()">
+                        BAŞLAT
+                    </button>
+                </div>
+            </div>
+
+            <!-- BİTİŞ EKRANI -->
+            <div id="game-over-screen" class="hidden text-center p-6 rounded-xl game-over-transition">
+                <h2 class="text-4xl font-extrabold text-red-500 mb-4">OYUN BİTTİ!</h2>
+                <p class="text-2xl text-white mb-6">Final Puanınız: <span id="final-score" class="text-green-400 font-extrabold">0</span></p>
+                <button id="submit-score-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg" onclick="submitScore()">Puanı Airtable'a Gönder</button>
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mt-4" onclick="startGame()">Yeni Deneme Başlat</button>
+                <p class="text-sm text-gray-500 mt-4">Günlük hakkınız azalacaktır.</p>
+            </div>
+
+
+            <!-- OYUN ALANI (Gizli Başlar) -->
+            <div id="game-content" class="hidden p-8"> <!-- OYUN İÇİ DOLGU BURAYA TAŞINDI -->
+                 <p id="game-description" class="text-sm text-gray-400 mb-6 text-center">ALIM: Fiyat geri çekilmenin tam üzerine geldiğinde AL butonuna bas!</p>
+            
+                <div id="status-display" class="mb-6 p-3 rounded-lg text-center font-semibold grid grid-cols-3 gap-2">
+                    <span id="daily-plays" class="text-yellow-400 col-span-1">❤️: 0</span> 
+                    <span id="current-score" class="text-white col-span-1">Puan: 0</span>
+                    <span id="timer" class="text-red-400 col-span-1">Süre: 90s</span>
+                    <span id="current-level-display" class="col-span-3 text-left text-green-400">Seviye: 1</span>
+                </div>
+
+                <div id="game-area">
+                    
+                    <div class="flex justify-center items-end relative">
+                        
+                        <!-- Dikey Fibonacci Ölçer (Grafik) -->
+                        <div id="meter-container" class="meter-container">
+                            <!-- 50% Çizgisi (Renk Değişim Referansı) -->
+                            <div class="absolute w-full h-[1px] bg-yellow-500/80" style="bottom: 150px; pointer-events: none;"></div>
+                            <!-- Fibonacci Seviye Çizgileri -->
+                            <div id="fib-lines-container"></div> 
+                            <!-- Hedef Bölge 1 (Primary/Single) -->
+                            <div id="target-zone-1" class="target-zone"></div>
+                            <!-- Hedef Bölge 2 (Secondary/Bonus) -->
+                            <div id="target-zone-2" class="target-zone hidden"></div>
+                            <!-- Hareket Eden Gösterge (Mum) -->
+                            <div id="indicator"></div>
+                        </div>
+
+                        <!-- Etiketler KALDIRILDI -->
+                        <!-- <div class="ml-4 text-xs text-gray-400 h-[300px] flex flex-col justify-between">
+                            <div>100% (High)</div>
+                            <div style="margin-top: -10px;">50%</div>
+                            <div>0% (Low)</div>
+                        </div> -->
+                    </div>
+
+                    <div id="feedback" class="mt-6 text-center font-bold text-lg h-8"></div>
+
+                    <!-- Aksiyon Butonu (AL/TP/SAT) -->
+                    <button id="action-button-game" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg mt-6 text-2xl" onclick="handleGameClick()">
+                        AL
+                    </button>
+                    <!-- Pozisyon Kapatma Butonu -->
+                    <button id="exit-game-btn" class="w-full text-white font-semibold py-2 px-4 rounded-lg mt-3 text-sm hidden" onclick="exitGame()">
+                        POZİSYONU KAPAT & ÇIK
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Airtable Mesaj Kutusu -->
+        <div id="airtable-message" class="fixed bottom-4 right-4 p-3 rounded-lg shadow-lg hidden"></div>
+        
+    </div>
+
+    <script>
+        // FIREBASE İÇİN ZORUNLU DEĞİŞKENLER
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const apiKey = ""; 
+
+        // =======================================================
+        // AIRTABLE ENTEGRASYON BİLGİLERİ (Kendi bilgilerinizle değiştirin!)
+        // =======================================================
+        const AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY";
+        const AIRTABLE_BASE_ID = "YOUR_AIRTABLE_BASE_ID";
+        const AIRTABLE_TABLE_NAME = "MiniGameScores";
+
+        // =======================================================
+        // OYUN KONFİGÜRASYONU VE DEĞİŞKENLER
+        // =======================================================
+        const NFT_RANK_LIMITS = { 1: 3, 2: 5, 3: 7 };
+        const nftRank = 2; // Simüle edilen rütbe (5 oyun hakkı)
+        const FIB_LEVELS = [0.236, 0.382, 0.5, 0.618, 0.786];
+        const METER_HEIGHT_PX = 300; // Ölçer yüksekliği (CSS'deki ile aynı olmalı)
+        const TOTAL_GAME_TIME_SECONDS = 90; // Toplam oyun süresi 90 saniye
+        const MAX_LEVEL = 10; // Toplam Seviye Sayısı (Yeni)
+        
+        // YENİ EKLEME: GİZLİ ZAMAN AVANTAJI
+        const FIB_TIMES_SECONDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+
+
+        // ZORLUK SEVİYESİ AYARLARI (10 Seviyeye Güncellendi)
+        const DIFFICULTY_SETTINGS = {
+            1: { 
+                name: "ALIM (Kolay)",
+                MAX_VELOCITY: 1.5,
+                ACCELERATION_FACTOR: 0.1,
+                ATTRACTION_FACTOR: 0.005,
+                BRAKING_FACTOR: 0.02,
+                STICKY_CHANCE: 0.15,
+                HIT_TOLERANCE_PX: 15, 
+                MAX_BASE_SCORE: 10,
+                ACTION_TEXT: "AL",
+                TARGET_ROLE: "BUY", 
+                DESCRIPTION: "ALIM: Fiyat geri çekilmenin tam üzerine geldiğinde AL butonuna bas!",
+                FAIL_MESSAGE: "Hedefi kaçırdın! Tekrar denemek için Seviye 1'e dönüldü."
+            },
+            2: { 
+                name: "TP (Orta-Düşük)",
+                MAX_VELOCITY: 2.0,
+                ACCELERATION_FACTOR: 0.2,
+                ATTRACTION_FACTOR: 0.007,
+                BRAKING_FACTOR: 0.04,
+                STICKY_CHANCE: 0.12,
+                HIT_TOLERANCE_PX: 12,
+                MAX_BASE_SCORE: 15,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT",
+                DESCRIPTION: "KAR AL: Kar Alma noktasına yaklaşınca TP butonuna bas!",
+                FAIL_MESSAGE: "Kar alımı başarısız! Hızını ayarla ve Seviye 1'den başla."
+            },
+            3: { 
+                name: "TP (Orta)",
+                MAX_VELOCITY: 2.5,
+                ACCELERATION_FACTOR: 0.4,
+                ATTRACTION_FACTOR: 0.010,
+                BRAKING_FACTOR: 0.07,
+                STICKY_CHANCE: 0.10,
+                HIT_TOLERANCE_PX: 8,
+                MAX_BASE_SCORE: 25,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT",
+                DESCRIPTION: "KAR AL: Kar Alma noktasına yaklaşınca TP butonuna bas!",
+                FAIL_MESSAGE: "Kar alımı başarısız! Hızını ayarla ve Seviye 1'den başla."
+            },
+            4: { 
+                name: "TP (Orta-Yüksek)",
+                MAX_VELOCITY: 3.5,
+                ACCELERATION_FACTOR: 0.6,
+                ATTRACTION_FACTOR: 0.012,
+                BRAKING_FACTOR: 0.09,
+                STICKY_CHANCE: 0.08,
+                HIT_TOLERANCE_PX: 6,
+                MAX_BASE_SCORE: 35,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT",
+                DESCRIPTION: "KAR AL: Kar Alma noktasına yaklaşınca TP butonuna bas!",
+                FAIL_MESSAGE: "Kar alımı başarısız! Hızını ayarla ve Seviye 1'den başla."
+            },
+            5: { 
+                name: "SATIM (Zor)",
+                MAX_VELOCITY: 4.5,
+                ACCELERATION_FACTOR: 0.7,
+                ATTRACTION_FACTOR: 0.015,
+                BRAKING_FACTOR: 0.1,
+                STICKY_CHANCE: 0.07,
+                HIT_TOLERANCE_PX: 5, // 4'ten 5'e çıkarıldı (yumuşatma)
+                MAX_BASE_SCORE: 45, // Puan artırıldı
+                ACTION_TEXT: "TP", 
+                TARGET_ROLE: "TAKE_PROFIT", 
+                DESCRIPTION: "TP: Fiyatı üst hedeflere ulaştırmadan Kar Al (TP) butonuna bas!",
+                FAIL_MESSAGE: "Tek Hedefi kaçırdın! Seviye 1'e geri dön."
+            },
+            // ÇİFT HEDEF SEVİYELERİ BAŞLANGICI
+            6: { 
+                name: "SATIM (Çift Hedef)",
+                MAX_VELOCITY: 5.0,
+                ACCELERATION_FACTOR: 0.7,
+                ATTRACTION_FACTOR: 0.015,
+                BRAKING_FACTOR: 0.08,
+                STICKY_CHANCE: 0.07,
+                HIT_TOLERANCE_PX: 6, 
+                MAX_BASE_SCORE: 50,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT", 
+                DESCRIPTION: "ÇİFT HEDEF TP: İki alandan birine vur. Yüksek olana vurmak x2 puan verir!",
+                FAIL_MESSAGE: "Çift Hedef kaçırıldı! Seviye 1'e geri dön."
+            },
+            7: { 
+                name: "SATIM (Çift Hedef Orta)",
+                MAX_VELOCITY: 6.5, 
+                ACCELERATION_FACTOR: 1.2, 
+                ATTRACTION_FACTOR: 0.015, 
+                BRAKING_FACTOR: 0.1,
+                STICKY_CHANCE: 0.06,
+                HIT_TOLERANCE_PX: 5,
+                MAX_BASE_SCORE: 60,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT", 
+                DESCRIPTION: "ÇİFT HEDEF TP: İki alandan birine vur. Yüksek olana vurmak x2 puan verir!",
+                FAIL_MESSAGE: "Çift Hedef kaçırıldı! Seviye 1'e geri dön."
+            },
+            8: { 
+                name: "SATIM (Çift Hedef Hızlı)",
+                MAX_VELOCITY: 8.5, 
+                ACCELERATION_FACTOR: 2.5, // 2.0 -> 2.5 (Daha agresif salınım)
+                ATTRACTION_FACTOR: 0.02,
+                BRAKING_FACTOR: 0.12,
+                STICKY_CHANCE: 0.05,
+                HIT_TOLERANCE_PX: 4,
+                MAX_BASE_SCORE: 75,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT", 
+                DESCRIPTION: "ÇİFT HEDEF TP: İki alandan birine vur. Yüksek olana vurmak x2 puan verir!",
+                FAIL_MESSAGE: "Çift Hedef kaçırıldı! Seviye 1'e geri dön."
+            },
+            9: { 
+                name: "SATIM (Çift Hedef Dar)",
+                MAX_VELOCITY: 10.0,
+                ACCELERATION_FACTOR: 3.0, // 2.5 -> 3.0 (Daha agresif salınım)
+                ATTRACTION_FACTOR: 0.025,
+                BRAKING_FACTOR: 0.15,
+                STICKY_CHANCE: 0.04,
+                HIT_TOLERANCE_PX: 3,
+                MAX_BASE_SCORE: 90,
+                ACTION_TEXT: "TP",
+                TARGET_ROLE: "TAKE_PROFIT", 
+                DESCRIPTION: "ÇİFT HEDEF TP: İki alandan birine vur. Yüksek olana vurmak x2 puan verir!",
+                FAIL_MESSAGE: "Çift Hedef kaçırıldı! Seviye 1'e geri dön."
+            },
+            10: { 
+                name: "SATIM (MASTER)",
+                MAX_VELOCITY: 12.0,
+                ACCELERATION_FACTOR: 4.0, // 3.5 -> 4.0 (MASTER ivmesi)
+                ATTRACTION_FACTOR: 0.03,
+                BRAKING_FACTOR: 0.18,
+                STICKY_CHANCE: 0.03,
+                HIT_TOLERANCE_PX: 2, 
+                MAX_BASE_SCORE: 120,
+                ACTION_TEXT: "SAT",
+                TARGET_ROLE: "SELL", 
+                DESCRIPTION: "MASTER SATIM: Pozisyonu kapatmak için çıkış butonunu kullan!",
+                FAIL_MESSAGE: "MASTER hedefi kaçırdın! Seviye 1'e geri dön."
+            },
+        };
+
+        let gameDifficulty = 1; 
+        let currentSettings = DIFFICULTY_SETTINGS[gameDifficulty];
+
+        let correctFibLevel; 
+        let targetY; // Birincil hedefin yüksekliği
+        let correctFibLevel2; // İkinci hedefin seviyesi
+        let targetY2; // İkinci hedefin seviyesi
+        let isDualTargetRound = false; // Çift hedef modu aktif mi?
+        
+        // YENİ DUAL TARGET İÇİN STATE'LER
+        let targetsForAttraction = []; // [lowY, highY]
+        let attractionTargetIndex = 0; // 0: lowY, 1: highY
+        let attractionSwitchCounter = 0;
+        const SWITCH_THRESHOLD = 150; // ~2.5 saniyede bir hedef değiştir
+
+        let animationFrameId; 
+        let isRunning = false;
+        let isStickyFrame = false; 
+        let isInsideTarget = false; 
+        
+        // YENİ FIB ZAMANI KİLİT STATE'LER
+        let isFibTimeLocked = false;
+        let fibLockoutSecond = -1; // Hangi saniyede kilitlendiğimizi tutar.
+
+
+        let currentIndicatorHeight; 
+        let velocity; 
+        let acceleration; 
+
+        let currentScore = 0;
+        let gamesPlayedToday = 0;
+        let maxDailyPlays = NFT_RANK_LIMITS[nftRank] || 3;
+        let timeLeft = TOTAL_GAME_TIME_SECONDS;
+        let timerInterval;
+
+        // DOM Elementleri
+        const feedbackEl = document.getElementById('feedback');
+        // 'action-button' artık başlangıç ve oyun butonu olarak ikiye ayrıldı
+        const actionButtonSplash = document.getElementById('action-button'); 
+        const actionButtonGame = document.getElementById('action-button-game'); 
+        const dailyPlaysEl = document.getElementById('daily-plays');
+        const currentScoreEl = document.getElementById('current-score');
+        const timerEl = document.getElementById('timer');
+        const currentLevelDisplayEl = document.getElementById('current-level-display');
+        const gameContentEl = document.getElementById('game-content'); // Yeni oyun içeriği konteyneri
+        const splashScreenEl = document.getElementById('splash-screen'); // Yeni başlangıç ekranı konteyneri
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const airtableMessageEl = document.getElementById('airtable-message');
+        const indicator = document.getElementById('indicator');
+        const targetZone1 = document.getElementById('target-zone-1'); // Birincil Hedef
+        const targetZone2 = document.getElementById('target-zone-2'); // İkincil/Bonus Hedef
+        const fibLinesContainer = document.getElementById('fib-lines-container');
+        const gameDescriptionEl = document.getElementById('game-description');
+        const exitGameBtn = document.getElementById('exit-game-btn');
+        const splashDailyPlaysEl = document.getElementById('splash-daily-plays'); // Başlangıç ekranındaki hak göstergesi
+
+
+        // =======================================================
+        // YARDIMCI VE DURUM FONKSİYONLARI
+        // =======================================================
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function loadGameState() {
+            const today = new Date().toDateString();
+            const storedData = JSON.parse(localStorage.getItem('fibonacciGameDataLoopV4')) || {};
+
+            if (storedData.date === today) {
+                // NaN kontrolü: Eğer puanda NaN varsa 0 olarak yükle
+                gamesPlayedToday = storedData.plays;
+                currentScore = isNaN(storedData.score) ? 0 : storedData.score || 0;
+            } else {
+                gamesPlayedToday = 0;
+                currentScore = 0;
+            }
+            updateStatusDisplay();
+        }
+
+        function saveGameState() {
+            const today = new Date().toDateString();
+            localStorage.setItem('fibonacciGameDataLoopV4', JSON.stringify({
+                date: today,
+                plays: gamesPlayedToday,
+                score: currentScore // currentScore'u kaydeder
+            }));
+        }
+
+        function updateStatusDisplay() {
+            const remainingPlays = maxDailyPlays - gamesPlayedToday;
+            dailyPlaysEl.textContent = `❤️: ${remainingPlays}`; // Oyun içi Hak yerine Kalp
+            splashDailyPlaysEl.textContent = `${remainingPlays} / ${maxDailyPlays}`; // Başlangıç ekranındaki hak
+            currentScoreEl.textContent = `Puan: ${currentScore}`;
+            timerEl.textContent = `Süre: ${timeLeft}s`;
+            // Aksiyon metni kaldırıldı
+            currentLevelDisplayEl.textContent = `Seviye: ${gameDifficulty}`; 
+            currentSettings = DIFFICULTY_SETTINGS[gameDifficulty]; // Güncel ayarlar
+            gameDescriptionEl.textContent = currentSettings.DESCRIPTION;
+            
+            // Oyun hakkı bittiğinde başlangıç butonunu devre dışı bırak
+            if (remainingPlays <= 0) {
+                 actionButtonSplash.disabled = true;
+                 actionButtonSplash.textContent = 'HAKKINIZ BİTTİ';
+            } else if (!isRunning) {
+                 actionButtonSplash.disabled = false;
+                 actionButtonSplash.textContent = 'BAŞLAT';
+            }
+        }
+
+        function showAirtableMessage(message, type = 'success') {
+            airtableMessageEl.textContent = message;
+            airtableMessageEl.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+            }`;
+            airtableMessageEl.style.display = 'block';
+            setTimeout(() => {
+                airtableMessageEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        function drawFibLines() {
+            fibLinesContainer.innerHTML = '';
+            FIB_LEVELS.forEach(level => {
+                const yPosition = METER_HEIGHT_PX * level; 
+
+                const line = document.createElement('div');
+                line.className = 'absolute w-full h-[1px] bg-gray-500/50';
+                line.style.bottom = `${yPosition}px`;
+                line.style.pointerEvents = 'none';
+
+                const label = document.createElement('span');
+                // Hedef vurgusu için sınıfı ayarla
+                label.className = 'fib-level-label absolute right-[-35px] top-[-8px] text-[10px] text-gray-500';
+                label.textContent = `${(level * 100).toFixed(1)}%`;
+                label.setAttribute('data-level', level); // Hangi seviye olduğunu tut
+                line.appendChild(label);
+                
+                fibLinesContainer.appendChild(line);
+            });
+        }
+        
+        function highlightTargetLabels(targetLevels) {
+            // Önce tüm etiketlerin vurgusunu kaldır
+            document.querySelectorAll('.fib-level-label').forEach(label => {
+                label.classList.remove('target-level-label'); // Neon yeşil sınıfı
+                label.classList.remove('text-gray-200'); // Parlaklık
+                label.classList.add('text-gray-500'); // Normal gri
+            });
+
+            // Hedeflenen seviyelerin vurgusunu aç
+            targetLevels.forEach(level => {
+                const labelElement = document.querySelector(`.fib-level-label[data-level="${level.toFixed(3)}"]`);
+                if (labelElement) {
+                    labelElement.classList.add('target-level-label');
+                    labelElement.classList.remove('text-gray-500');
+                    labelElement.classList.add('text-gray-200'); // Biraz daha parlak
+                }
+            });
+        }
+
+
+        // =======================================================
+        // ZAMANLAYICI YÖNETİMİ
+        // =======================================================
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateStatusDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    endGame("SÜRE BİTTİ!");
+                }
+            }, 1000);
+        }
+
+        // =======================================================
+        // OYUN AKIŞI
+        // =======================================================
+
+        function startGame() {
+            if (gamesPlayedToday >= maxDailyPlays) {
+                return endGame("Günlük Oyun Hakkınız Bitti!");
+            }
+
+            // UI Görünürlüğünü Değiştir
+            splashScreenEl.classList.add('hidden');
+            gameContentEl.classList.remove('hidden');
+
+            // Oyun State'lerini Sıfırla (Yeni Deneme)
+            gameDifficulty = 1;
+            currentScore = 0;
+            timeLeft = TOTAL_GAME_TIME_SECONDS;
+            
+            // UI'ı hazırla
+            gameOverScreen.classList.add('hidden');
+            
+            // Buton ayarları (Oyun butonu)
+            actionButtonGame.textContent = DIFFICULTY_SETTINGS[gameDifficulty].ACTION_TEXT;
+            actionButtonGame.disabled = false;
+            actionButtonGame.onclick = handleGameClick;
+
+            // Denemeyi kaydet
+            gamesPlayedToday++;
+            saveGameState();
+            
+            startTimer();
+            startRound();
+        }
+
+        function exitGame() {
+            // Süre bitmeden oyunu sonlandırır, puanı korur.
+            endGame("POZİSYON KAPATILDI!");
+        }
+
+        function startRound() {
+            if (timeLeft <= 0) return; 
+
+            // Ayarları mevcut zorluk seviyesinden al
+            currentSettings = DIFFICULTY_SETTINGS[gameDifficulty];
+            updateStatusDisplay(); 
+            
+            // *** YENİ BUTON GÖRÜNÜRLÜK MANTIĞI ***
+            actionButtonGame.textContent = currentSettings.ACTION_TEXT;
+            
+            if (gameDifficulty === MAX_LEVEL) {
+                // Seviye 10: Sadece Çıkış butonu aktif.
+                actionButtonGame.classList.add('hidden');
+                exitGameBtn.classList.remove('hidden');
+            } else if (gameDifficulty >= 2) {
+                // Seviye 2-9: TP butonu ve Çıkış butonu aktif.
+                actionButtonGame.classList.remove('hidden');
+                exitGameBtn.classList.remove('hidden');
+            } else { // Seviye 1
+                // Seviye 1: AL butonu aktif, Çıkış butonu gizli.
+                actionButtonGame.classList.remove('hidden');
+                exitGameBtn.classList.add('hidden'); 
+            }
+            // ***************************************
+
+            // Aksiyona göre buton rengini ayarla
+            const buttonColor = currentSettings.TARGET_ROLE === 'BUY' ? '#39ff14' : (currentSettings.TARGET_ROLE === 'SELL' ? '#ef4444' : '#3b82f6'); // TP için mavi, AL/SAT için neon yeşili/kırmızı
+            actionButtonGame.style.backgroundColor = buttonColor;
+            actionButtonGame.style.boxShadow = `0 0 15px ${buttonColor}80`; /* Buton Neon Glow */
+
+            
+            actionButtonGame.disabled = false;
+            feedbackEl.textContent = '';
+            
+            // Mumun yüksekliğini rastgele başlat
+            currentIndicatorHeight = getRandomInt(METER_HEIGHT_PX * 0.1, METER_HEIGHT_PX * 0.9);
+            indicator.style.height = `${currentIndicatorHeight}px`;
+            
+            // Hız ve ivmeyi başlat
+            velocity = (Math.random() - 0.5) * currentSettings.MAX_VELOCITY * 0.5; // İlk hız daha düşük
+            acceleration = 0;
+            isStickyFrame = false; // Yapışkan vuruş durumunu sıfırla
+            isFibTimeLocked = false; // Fib kilit durumunu sıfırla
+
+            // Çift Hedef Kontrolü
+            isDualTargetRound = gameDifficulty > 5;
+
+            // 1. Rastgele Hedef Seviyeleri Seç
+            // Çift hedef varsa (L6-L10), ana hedefi en yüksek Fib seviyesi (0.786) olmaktan çıkar.
+            const maxIndex = FIB_LEVELS.length - 1;
+            const maxIndexForPrimary = isDualTargetRound ? maxIndex - 1 : maxIndex;
+
+            let fibIndex1 = getRandomInt(0, maxIndexForPrimary);
+            correctFibLevel = FIB_LEVELS[fibIndex1]; // Primary
+            
+            // Hedefleri sıfırla/başlat
+            targetsForAttraction = [];
+            targetY2 = null;
+            correctFibLevel2 = null;
+            let highlightedLevels = []; // Vurgulanacak seviyeler
+
+            if (isDualTargetRound) {
+                targetZone2.classList.remove('hidden');
+                
+                // İkinci hedefi seç: Birinciden farklı ve daha yüksek olmalı
+                let fibIndex2 = fibIndex1;
+                // Bu döngü artık fibIndex1'in en yüksek eleman olmaması garantilendiği için sonlanacaktır.
+                while (FIB_LEVELS[fibIndex2] <= correctFibLevel) {
+                    fibIndex2 = getRandomInt(0, FIB_LEVELS.length - 1);
+                }
+                correctFibLevel2 = FIB_LEVELS[fibIndex2];
+                
+                const lowTargetY = METER_HEIGHT_PX * correctFibLevel;
+                const highTargetY = METER_HEIGHT_PX * correctFibLevel2;
+
+                targetsForAttraction = [lowTargetY, highTargetY];
+                attractionTargetIndex = 0; // Her zaman düşük hedeften başla
+                targetY = lowTargetY; // Dinamik Attraction Target'ı başlat
+                attractionSwitchCounter = 0;
+                
+                highlightedLevels = [correctFibLevel, correctFibLevel2];
+
+            } else {
+                targetY = METER_HEIGHT_PX * correctFibLevel; // Tek Hedef Y
+                targetZone2.classList.add('hidden');
+                highlightedLevels = [correctFibLevel];
+            }
+            
+            // *** YENİ HEDEF VURGULAMA MANTIĞI ***
+            highlightTargetLabels(highlightedLevels);
+            // **********************************
+
+            // 3. Yapışkan Vuruş İhtimalini Kontrol Et
+            if (Math.random() < currentSettings.STICKY_CHANCE) {
+                isStickyFrame = true;
+            }
+
+            // 4. UI'ı Güncelle
+            drawFibLines(); 
+
+            const tolerance = currentSettings.HIT_TOLERANCE_PX;
+            
+            if (isDualTargetRound) {
+                // Çift Hedef Ayarı
+                const lowTargetY = METER_HEIGHT_PX * correctFibLevel;
+                const highTargetY = METER_HEIGHT_PX * correctFibLevel2;
+                
+                // Primary Target (Düşük Hedef - Yeşil)
+                targetZone1.style.bottom = `${lowTargetY - tolerance}px`;
+                targetZone1.style.height = `${tolerance * 2}px`;
+
+                // Secondary Target (Yüksek/Bonus Hedef - Mavi)
+                targetZone2.style.bottom = `${highTargetY - tolerance}px`;
+                targetZone2.style.height = `${tolerance * 2}px`;
+            } else {
+                // Tek Hedef Ayarı
+                targetZone1.style.bottom = `${targetY - tolerance}px`; 
+                targetZone1.style.height = `${tolerance * 2}px`;
+            }
+            
+            // 5. Animasyonu Başlat
+            cancelAnimationFrame(animationFrameId);
+            isRunning = true;
+            animationFrameId = requestAnimationFrame(animateIndicator);
+        }
+
+        function animateIndicator() {
+            if (!isRunning) return;
+            
+            const tolerance = currentSettings.HIT_TOLERANCE_PX;
+            
+            let isNowInsideTarget = false;
+            let newHeight = currentIndicatorHeight; // Başlangıç değeri
+            
+            // =======================================================
+            // GİZLİ FIBONACCI ZAMAN AVANTAJI KONTROLÜ (300ms kilit)
+            // =======================================================
+            const currentTime = Math.floor(timeLeft);
+            
+            // Yeni kilitlenme kontrolü: Eğer Fib zamanındaysak VE bu saniyede daha önce kilitlenmediysek (ve seviye 10 değilse).
+            if (FIB_TIMES_SECONDS.includes(currentTime) && currentTime !== fibLockoutSecond && gameDifficulty !== MAX_LEVEL) {
+                isFibTimeLocked = true;
+                fibLockoutSecond = currentTime;
+                // 300ms sonra kilidi kaldır
+                setTimeout(() => {
+                    isFibTimeLocked = false;
+                }, 300); 
+            }
+            
+            if (isFibTimeLocked) {
+                // AVANTAJ MODU: Mum hedefin tam ortasına sabitlenir.
+                newHeight = targetY; 
+                velocity = 0; // Hızı sıfırla
+                isNowInsideTarget = true; // Zaten hedefin içindeyiz.
+                
+            } else {
+                // NORMAL HAREKET LOGIĞI
+                
+                // ÇİFT HEDEF SALINIM MANTIĞI
+                if (isDualTargetRound) {
+                    attractionSwitchCounter++;
+                    if (attractionSwitchCounter > SWITCH_THRESHOLD) {
+                        attractionTargetIndex = 1 - attractionTargetIndex; // 0'ı 1'e, 1'i 0'a çevir
+                        targetY = targetsForAttraction[attractionTargetIndex]; // Yeni Attraction Target'ı ayarla
+                        attractionSwitchCounter = 0;
+                    }
+                } 
+                // Tek hedefte targetY sabit kalır.
+
+                const randomAcceleration = (Math.random() * 2 - 1) * currentSettings.ACCELERATION_FACTOR; 
+                const distanceToTarget = targetY - currentIndicatorHeight;
+                const attractionForce = distanceToTarget * currentSettings.ATTRACTION_FACTOR; 
+
+                let brakingForce = 0;
+                const distance = Math.abs(distanceToTarget);
+                if (distance < currentSettings.HIT_TOLERANCE_PX * 2) {
+                    brakingForce = -velocity * currentSettings.BRAKING_FACTOR; 
+                }
+
+                acceleration = randomAcceleration + attractionForce + brakingForce;
+                
+                const maxAccel = 0.5;
+                acceleration = Math.min(Math.max(acceleration, -maxAccel), maxAccel);
+                
+                velocity += acceleration;
+                velocity = Math.min(Math.max(velocity, -currentSettings.MAX_VELOCITY), currentSettings.MAX_VELOCITY);
+
+                newHeight = currentIndicatorHeight + velocity;
+                
+                // Sınır Kontrolleri
+                if (newHeight > METER_HEIGHT_PX) {
+                    newHeight = METER_HEIGHT_PX;
+                    velocity *= -0.8; 
+                    acceleration = 0;
+                } else if (newHeight < 10) { 
+                    newHeight = 10;
+                    velocity *= -0.8; 
+                    acceleration = 0; 
+                }
+
+                // HEDEF İÇİ KONTROLÜ
+                if (isDualTargetRound) {
+                    const lowTargetY = METER_HEIGHT_PX * correctFibLevel;
+                    const highTargetY = METER_HEIGHT_PX * correctFibLevel2;
+
+                    const isInside1 = Math.abs(newHeight - lowTargetY) <= tolerance;
+                    const isInside2 = Math.abs(newHeight - highTargetY) <= tolerance;
+                    isNowInsideTarget = isInside1 || isInside2;
+                } else {
+                    isNowInsideTarget = Math.abs(newHeight - METER_HEIGHT_PX * correctFibLevel) <= tolerance;
+                }
+            }
+            // =======================================================
+            
+            currentIndicatorHeight = newHeight;
+            
+            // DOM'a Uygula
+            indicator.style.height = `${currentIndicatorHeight}px`;
+
+            // RENK MANTIĞI
+            if (isFibTimeLocked || isNowInsideTarget) {
+                // HEDEF İÇİNDE (veya Fib Zamanı): Tıklama sinyali (Parlak Yeşil)
+                indicator.style.backgroundColor = '#22c55e';
+            } else {
+                // HEDEF DIŞINDA: Yön/Volatilite Sinyali
+                if (velocity > 0.2) {
+                    indicator.style.backgroundColor = '#10b981'; // Güçlü Yükseliş
+                } else if (velocity < -0.2) {
+                    indicator.style.backgroundColor = '#ef4444'; // Güçlü Düşüş
+                } else {
+                    indicator.style.backgroundColor = '#ffcc00'; // Nötr/Yavaş
+                }
+            }
+
+            isInsideTarget = isNowInsideTarget;
+            
+            animationFrameId = requestAnimationFrame(animateIndicator);
+        }
+
+        function handleGameClick() {
+            if (isRunning) {
+                checkAnswer();
+            } else {
+                // Bu kısım artık splash screen'den yönlendirildiği için kullanılmayacak
+                if (timeLeft > 0) {
+                     startRound();
+                }
+            }
+        }
+
+
+        function checkAnswer() {
+            if (!isRunning) return;
+            
+            cancelAnimationFrame(animationFrameId);
+            isRunning = false;
+            actionButtonGame.disabled = true;
+
+            const tolerance = currentSettings.HIT_TOLERANCE_PX;
+            const maxScore = currentSettings.MAX_BASE_SCORE;
+            let multiplier = 1;
+
+            let stoppedYTop = currentIndicatorHeight;
+            
+            // Eğer Fib zamanında basıldıysa, tam hedefi vurduğu kabul edilir.
+            const currentTime = Math.floor(timeLeft);
+            // Sadece Fib kilitlenme saniyesinde isek avantajı say.
+            const isFibTimeAdvantage = FIB_TIMES_SECONDS.includes(currentTime) && gameDifficulty !== MAX_LEVEL; 
+
+            if (isStickyFrame || isFibTimeAdvantage) {
+                // Yapışkan vuruşta veya Fib zamanda, hedefi vurduğu kabul edilir.
+                if (isDualTargetRound) {
+                    // Bonus hedefi vurma şansı verilir (daha yüksek fiyat)
+                    const highTargetY = METER_HEIGHT_PX * correctFibLevel2;
+                    stoppedYTop = highTargetY;
+                    multiplier = 2; 
+                } else {
+                    stoppedYTop = METER_HEIGHT_PX * correctFibLevel;
+                }
+            }
+
+            // Kontrol Edilecek Hedefler
+            let targetsToCheck = [];
+            if (isDualTargetRound) {
+                const lowTargetY = METER_HEIGHT_PX * correctFibLevel;
+                const highTargetY = METER_HEIGHT_PX * correctFibLevel2;
+
+                targetsToCheck = [
+                    { y: lowTargetY, isBonus: false },
+                    { y: highTargetY, isBonus: true }
+                ];
+            } else {
+                targetsToCheck = [{ y: METER_HEIGHT_PX * correctFibLevel, isBonus: false }];
+            }
+
+            let hitTarget = null;
+            
+            for (const target of targetsToCheck) {
+                const finalDiff = Math.abs(stoppedYTop - target.y);
+                if (finalDiff <= tolerance) {
+                    hitTarget = target;
+                    break;
+                }
+            }
+            
+            // 3. Puanlama ve Seviye Kontrolü için değişkenleri tanımla
+            let basePoints = 0; 
+            let finalPoints = 0; 
+            let feedbackText = ''; 
+
+            if (hitTarget) {
+                // BAŞARILI İŞLEM (VURULDU)
+                
+                // Bonus Kontrolü ve Çarpan
+                if (hitTarget.isBonus) {
+                    multiplier = 2;
+                }
+
+                if (gameDifficulty < MAX_LEVEL) {
+                    gameDifficulty++; 
+                }
+                // Yeni seviye ayarlarını yükle
+                currentSettings = DIFFICULTY_SETTINGS[gameDifficulty];
+                
+                // Puan hesaplama
+                let proximityRatio = 1 - (Math.abs(stoppedYTop - hitTarget.y) / tolerance); 
+                
+                // === KRİTİK DÜZELTME: NaN KONTROLÜ (Kök Nedeni) ===
+                if (isNaN(proximityRatio)) {
+                    console.error("Proximity Ratio calculated as NaN. Resetting to 0.");
+                    proximityRatio = 0; // NaN olması durumunda oranı sıfırla.
+                }
+                // ==================================================
+
+                basePoints = (isStickyFrame || isFibTimeAdvantage) && multiplier === 2 ? maxScore : Math.max(Math.round(maxScore * proximityRatio), 1); 
+                finalPoints = basePoints * multiplier; 
+                
+                // === BUG FIX: NaN CHECK (Kontaminasyon Kontrolü) ===
+                if (!isNaN(finalPoints)) {
+                    currentScore += finalPoints;
+                } else {
+                    console.error("Score calculation resulted in NaN. finalPoints set to 0 to prevent contamination.");
+                }
+                // ===================================================
+                
+                let nextLevelDisplay = gameDifficulty < MAX_LEVEL ? `${gameDifficulty}` : `USTALIĞA`;
+                feedbackText = `<span class="text-green-400">BAŞARILI İŞLEM! Seviye ${nextLevelDisplay} geçildi!</span>`;
+                
+                if(multiplier > 1) {
+                    feedbackText += `<br><span class="text-yellow-300 text-sm font-bold">BONUS VURUŞ! (x${multiplier} Puan)</span>`;
+                }
+                
+                indicator.style.backgroundColor = '#22c55e'; // Yeşil (Başarılı)
+                
+            } else {
+                // BAŞARISIZ İŞLEM (KAÇIRILDI)
+                gameDifficulty = 1; 
+                currentSettings = DIFFICULTY_SETTINGS[gameDifficulty]; 
+                
+                // *** KRİTİK DÜZELTME: PUAN SIFIRLAMA ***
+                currentScore = 0; 
+                // **********************************
+
+                basePoints = 0;
+                // finalPoints zaten 0
+                feedbackText = `<span class="text-red-400">${DIFFICULTY_SETTINGS[1].FAIL_MESSAGE}</span>`;
+                indicator.style.backgroundColor = '#ef4444'; // Kırmızı (Başarısız)
+            }
+            
+            // Buton rengini işlemi yansıtacak şekilde ayarla
+            actionButtonGame.style.backgroundColor = finalPoints > 0 ? '#22c55e' : '#ef4444';
+            actionButtonGame.style.boxShadow = `0 0 15px ${finalPoints > 0 ? '#22c55e' : '#ef4444'}80`;
+
+
+            feedbackEl.innerHTML = feedbackText + (finalPoints > 0 ? ` (+${finalPoints} Puan)` : '');
+            updateStatusDisplay();
+            
+            // Sonraki tura hazırlan
+            if (timeLeft > 0) {
+                actionButtonGame.textContent = currentSettings.ACTION_TEXT; 
+                actionButtonGame.disabled = false;
+                
+                setTimeout(() => {
+                    if (timeLeft > 0 && !isRunning) {
+                         startRound();
+                    }
+                }, 800); 
+                
+            } else {
+                endGame("SÜRE BİTTİ!");
+            }
+        }
+
+        function endGame(message) {
+            cancelAnimationFrame(animationFrameId);
+            isRunning = false;
+            if (timerInterval) clearInterval(timerInterval);
+            
+            // UI Görünürlüğünü Değiştir
+            gameContentEl.classList.add('hidden');
+            splashScreenEl.classList.add('hidden'); // Splash screen'in gizli olduğundan emin ol
+            
+            // NaN KONTROLÜ: Final puana geçmeden önce son bir kontrol
+            const finalScoreValue = isNaN(currentScore) ? 0 : currentScore;
+
+            document.querySelector('#game-over-screen h2').textContent = message;
+            gameOverScreen.classList.remove('hidden');
+            finalScoreEl.textContent = finalScoreValue;
+        }
+        
+        // =======================================================
+        // AIRTABLE ENTEGRASYONU
+        // =======================================================
+
+        async function submitScore() {
+            // Kullanıcı ID simülasyonu
+            const userId = 'USER-' + crypto.randomUUID().substring(0, 8); 
+            // NaN KONTROLÜ
+            const score = isNaN(currentScore) ? 0 : currentScore;
+            
+            if (AIRTABLE_API_KEY === "YOUR_AIRTABLE_API_KEY") {
+                showAirtableMessage("Hata: Airtable API Anahtarı ayarlanmadı. Puan gönderme simülasyonu yapıldı.", 'error');
+                document.getElementById('submit-score-btn').disabled = true;
+                document.getElementById('submit-score-btn').textContent = 'API Yapılandırılmadı';
+                return;
+            }
+
+            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
+            const data = {
+                fields: {
+                    "UserId": userId,
+                    "Score": score,
+                    "GameName": "BuyBar",
+                    "DatePlayed": new Date().toISOString().split('T')[0],
+                    "MaxLevelReached": gameDifficulty 
+                }
+            };
+            
+            document.getElementById('submit-score-btn').disabled = true;
+            document.getElementById('submit-score-btn').textContent = 'Gönderiliyor...';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ records: [data] })
+                });
+
+                if (response.ok) {
+                    showAirtableMessage(`Puan başarıyla Airtable'a gönderildi! Skor: ${score}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showAirtableMessage(`Hata: Puan gönderilemedi. ${errorData.error.type}`, 'error');
+                }
+            } catch (error) {
+                showAirtableMessage("Ağ hatası: Lütfen internet bağlantınızı kontrol edin.", 'error');
+            } finally {
+                document.getElementById('submit-score-btn').textContent = 'Puan Gönderildi';
+            }
+        }
+
+        // =======================================================
+        // BAŞLANGIÇ
+        // =======================================================
+        
+        window.onload = () => {
+            loadGameState();
+            drawFibLines(); 
+            currentSettings = DIFFICULTY_SETTINGS[gameDifficulty]; 
+
+            // Başlangıç ekranını göster
+            gameContentEl.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            splashScreenEl.classList.remove('hidden');
+            
+            updateStatusDisplay(); // Hak sayısını günceller
+        };
+
+    </script>
+</body>
+</html>
