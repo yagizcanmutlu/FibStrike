@@ -7,25 +7,29 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Share+Tech+Mono&display=swap');
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d1117; /* Koyu arkaplan */
         }
         .container {
-            min-height: 100vh;
+            min-height: 10vh;
         }
         
+        /* DİJİTAL FONT SINIFI (Glow kaldırıldı, sadece font) */
+        .digital-text {
+            font-family: 'Share Tech Mono', monospace;
+            color: #39ff14;
+        }
+
         /* CYBERPUNK GLASS STİLİ */
         .game-card {
-            /* max-w-sm kaldırıldı. Web'de dev gibi gözükmemesi için tekrar eklendi. */
             max-width: 400px; 
             width: 100%;
             background-color: rgba(22, 27, 34, 0.7); /* %70 Opak Siyah */
             backdrop-filter: blur(10px); 
             box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 8px rgba(57, 255, 20, 0.1); /* Neon Glow */
             border: 1px solid rgba(57, 255, 20, 0.5); /* Neon Çerçeve */
-            transition: opacity 0.3s ease-in-out; /* Smooth geçiş için */
             padding: 0; /* İç dolgu kaldırıldı */
         }
         
@@ -83,12 +87,49 @@
             border: 1px solid rgba(57, 255, 20, 0.2); 
             box-shadow: 0 0 5px rgba(57, 255, 20, 0.1);
         }
-        #current-level-display {
-            color: #39ff14; /* Neon Yeşil - Okunabilir */
+        
+        /* GERİ BİLDİRİM KARTI (Yeni) */
+        .feedback-card {
+            /* TAŞMA DÜZELTMESİ İÇİN EK GENİŞLİK VE ORTALAMA */
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            
+            background-color: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+            padding: 8px; /* Padding korundu */
+            margin-top: 24px;
         }
+        /* Geri Bildirim Metni Taşıma Kuralı */
+        #feedback {
+             word-break: break-word; /* Uzun kelimeleri kırar */
+        }
+
+
+        /* SEVİYE GÖSTERGE KONTEYNERİ */
+        #level-container-wrapper {
+            position: relative; /* Merkezi konteyner için */
+            display: flex;
+            justify-content: center; /* Yatay ortalama */
+            /* Dikey Ortalama için yeni marjlar */
+            margin-bottom: 12px; 
+            margin-top: 12px; 
+            z-index: 10;
+        }
+
+        #current-level-display {
+            /* Level Container Stili */
+            background-color: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(57, 255, 20, 0.5);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+            color: #39ff14; /* Neon Yeşil - Okunabilir */
+            font-weight: 700;
+        }
+        
         .target-level-label {
             color: #39ff14; /* Neon Yeşil */
-            text-shadow: 0 0 4px #39ff14; /* Hafif Glow */
             font-weight: 700;
         }
 
@@ -153,6 +194,40 @@
         .splash-inner-content {
             padding: 24px; /* Oyun içeriğindeki padding'i simüle etmek için */
         }
+
+        /* Puan Animasyonu için CSS */
+        .score-boost {
+            transition: color 0.3s ease, transform 0.3s ease;
+            display: inline-block;
+        }
+        .score-animate {
+            color: #39ff14 !important; /* Yeşil vurgu (kesinlikle yeşil olsun diye !important) */
+            transform: scale(1.1); /* Hafif büyüme */
+        }
+        
+        /* YENİ POPUP SCORE STİLİ */
+        #popup-score-container {
+            position: absolute;
+            top: 25%; /* Level kutusu altına ortalandı */
+            left: 50%; 
+            z-index: 1000; 
+            transform: translate(-50%, -50%) scale(0.5); /* Başlangıçta küçük ve merkezde */
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Yaylı animasyon */
+            pointer-events: none; /* Tıklanabilir olmasın */
+            color: #39ff14;
+            font-size: 3rem; /* Büyük font */
+            font-weight: 900;
+            /* Stroke ve Gölge */
+            text-shadow: 0 0 8px #39ff14, 0 0 15px rgba(255, 255, 255, 0.5); 
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2); 
+            display: none; /* Başlangıçta gizli */
+        }
+        .animate-score-popup {
+            display: block !important;
+            transform: translate(-50%, -50%) scale(1.0); /* Büyüt */
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="text-white">
@@ -175,37 +250,60 @@
                         Günlük Hakkınız: <span id="splash-daily-plays" class="text-yellow-400">0</span>
                     </p>
 
-                    <!-- Action Button -->
-                    <button id="action-button" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg text-2xl" onclick="startGame()">
-                        BAŞLAT
-                    </button>
+                    <!-- OYUN BİTİŞ SONUÇ ALANI -->
+                    <div id="final-results-splash" class="text-center w-full mb-10 hidden pt-20"> <!-- mb-10 ve pt-20 ile yukarı kaydırıldı -->
+                         <h2 id="end-message-splash" class="text-xl font-bold text-red-400 mb-2">SÜRE BİTTİ!</h2>
+                         <p class="text-lg text-white">Final Puanınız: <span id="final-score-splash" class="text-green-400 font-extrabold">0</span></p>
+                    </div>
+
+                    <!-- Butonlar ve Sonuçlar İçin Yeni Konumlandırma -->
+                    <div class="flex flex-col items-center w-full mt-auto">
+
+                        <!-- Final Sonuç Metni (Yeni Konum) -->
+                        <div id="final-results-text" class="text-center w-full mb-6 hidden"> 
+                            <h2 id="end-message-splash-new" class="text-xl font-bold text-red-400 mb-2">SÜRE BİTTİ!</h2>
+                            <p class="text-lg text-white">Final Puanınız: <span id="final-score-splash-new" class="text-green-400 font-extrabold">0</span></p>
+                        </div>
+
+
+                        <!-- Puanı Kaydet Butonu -->
+                        <div id="submit-score-wrapper" class="hidden w-full mt-4">
+                            <button id="submit-score-btn-splash" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg w-full" onclick="submitScore()">PUANI KAYDET</button>
+                        </div>
+                        
+                        <!-- Yeni Deneme Başlat Butonu -->
+                        <button id="action-button" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg text-2xl mt-4" onclick="startGame()">
+                            BAŞLAT
+                        </button>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- BİTİŞ EKRANI -->
-            <div id="game-over-screen" class="hidden text-center p-6 rounded-xl game-over-transition">
-                <h2 class="text-4xl font-extrabold text-red-500 mb-4">OYUN BİTTİ!</h2>
-                <p class="text-2xl text-white mb-6">Final Puanınız: <span id="final-score" class="text-green-400 font-extrabold">0</span></p>
-                <button id="submit-score-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg" onclick="submitScore()">Puanı Airtable'a Gönder</button>
-                <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mt-4" onclick="startGame()">Yeni Deneme Başlat</button>
-                <p class="text-sm text-gray-500 mt-4">Günlük hakkınız azalacaktır.</p>
-            </div>
-
 
             <!-- OYUN ALANI (Gizli Başlar) -->
             <div id="game-content" class="hidden p-8"> <!-- OYUN İÇİ DOLGU BURAYA TAŞINDI -->
-                 <p id="game-description" class="text-sm text-gray-400 mb-6 text-center">ALIM: Fiyat geri çekilmenin tam üzerine geldiğinde AL butonuna bas!</p>
+                 <!-- game-description kaldırıldı -->
             
-                <div id="status-display" class="mb-6 p-3 rounded-lg text-center font-semibold grid grid-cols-3 gap-2">
+                <!-- YENİ STATÜS DÜZENLEMESİ: Sadece 3 Bilgi -->
+                <div id="status-display" class="mb-6 p-3 rounded-lg text-center font-semibold grid grid-cols-3 gap-2 digital-text">
                     <span id="daily-plays" class="text-yellow-400 col-span-1">❤️: 0</span> 
-                    <span id="current-score" class="text-white col-span-1">Puan: 0</span>
+                    <span id="current-score" class="col-span-1 text-white">Puan: 0</span>
                     <span id="timer" class="text-red-400 col-span-1">Süre: 90s</span>
-                    <span id="current-level-display" class="col-span-3 text-left text-green-400">Seviye: 1</span>
+                </div>
+                
+                <!-- YENİ SEVİYE KONUMU: STATUS DISPLAY altı, MUM üstü -->
+                <div id="level-container-wrapper" class="text-center mb-4 mt-[-12px]">
+                    <span id="current-level-display" class="py-1 px-3 rounded-md text-sm">Seviye: 1</span>
                 </div>
 
-                <div id="game-area">
+                <div id="game-area" class="relative">
                     
-                    <div class="flex justify-center items-end relative">
+                    <!-- YENİ POPUP SCORE GÖSTERİM ALANI (Seviye altına) -->
+                    <div id="popup-score-container" class="digital-text absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-green-400">
+                        +0
+                    </div>
+
+                    <div class="flex justify-center items-end relative pt-6"> <!-- pt-6 ile mum aşağı kaydırıldı -->
                         
                         <!-- Dikey Fibonacci Ölçer (Grafik) -->
                         <div id="meter-container" class="meter-container">
@@ -222,14 +320,13 @@
                         </div>
 
                         <!-- Etiketler KALDIRILDI -->
-                        <!-- <div class="ml-4 text-xs text-gray-400 h-[300px] flex flex-col justify-between">
-                            <div>100% (High)</div>
-                            <div style="margin-top: -10px;">50%</div>
-                            <div>0% (Low)</div>
-                        </div> -->
                     </div>
 
-                    <div id="feedback" class="mt-6 text-center font-bold text-lg h-8"></div>
+                    <!-- GERİ BİLDİRİM KARTI (Açıklama ve Sonuçlar burada görüntülenecek) -->
+                    <div id="feedback-wrapper" class="feedback-card text-center digital-text">
+                        <div id="feedback" class="font-bold text-sm">ALIM: Fiyat geri çekilmenin tam üzerine geldiğinde AL butonuna bas!</div>
+                    </div>
+
 
                     <!-- Aksiyon Butonu (AL/TP/SAT) -->
                     <button id="action-button-game" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg mt-6 text-2xl" onclick="handleGameClick()">
@@ -257,11 +354,11 @@
         const apiKey = ""; 
 
         // =======================================================
-        // AIRTABLE ENTEGRASYON BİLGİLERİ
+        // AIRTABLE ENTEGRASYON BİLGİLERİ (Kendi bilgilerinizle değiştirin!)
         // =======================================================
         const AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY";
         const AIRTABLE_BASE_ID = "YOUR_AIRTABLE_BASE_ID";
-        const AIRTABLE_TABLE_NAME = "nft_list";
+        const AIRTABLE_TABLE_NAME = "MiniGameScores";
 
         // =======================================================
         // OYUN KONFİGÜRASYONU VE DEĞİŞKENLER
@@ -442,7 +539,7 @@
         let isStickyFrame = false; 
         let isInsideTarget = false; 
         
-        // YENİ FIB ZAMANI KİLİT STATE'LER
+        // YENİ FIB ZAMANI KİLİT STATE'LERİ
         let isFibTimeLocked = false;
         let fibLockoutSecond = -1; // Hangi saniyede kilitlendiğimizi tutar.
 
@@ -468,17 +565,32 @@
         const currentLevelDisplayEl = document.getElementById('current-level-display');
         const gameContentEl = document.getElementById('game-content'); // Yeni oyun içeriği konteyneri
         const splashScreenEl = document.getElementById('splash-screen'); // Yeni başlangıç ekranı konteyneri
-        const gameOverScreen = document.getElementById('game-over-screen');
-        const finalScoreEl = document.getElementById('final-score');
+        // const gameOverScreen = document.getElementById('game-over-screen'); // Kaldırıldı
+        const finalScoreEl = document.getElementById('final-score'); // Kaldırıldı
         const airtableMessageEl = document.getElementById('airtable-message');
         const indicator = document.getElementById('indicator');
         const targetZone1 = document.getElementById('target-zone-1'); // Birincil Hedef
         const targetZone2 = document.getElementById('target-zone-2'); // İkincil/Bonus Hedef
         const fibLinesContainer = document.getElementById('fib-lines-container');
-        const gameDescriptionEl = document.getElementById('game-description');
+        const gameDescriptionEl = document.getElementById('game-description'); // KALDIRILDI
         const exitGameBtn = document.getElementById('exit-game-btn');
         const splashDailyPlaysEl = document.getElementById('splash-daily-plays'); // Başlangıç ekranındaki hak göstergesi
 
+        // Yeni Splash Sonuç Alanı Elementleri
+        const finalResultsSplashEl = document.getElementById('final-results-splash'); // Eski sonuç metin alanı (kullanılmayacak, yeni final-results-text kullanılacak)
+        const endMessageSplashEl = document.getElementById('end-message-splash'); // Eski
+        const finalScoreSplashEl = document.getElementById('final-score-splash'); // Eski
+
+        const submitScoreWrapperEl = document.getElementById('submit-score-wrapper');
+        const submitScoreBtnSplash = document.getElementById('submit-score-btn-splash');
+        
+        // YENİ SONUÇ METİN ALANI VE ELEMENTLERİ
+        const finalResultsTextEl = document.getElementById('final-results-text');
+        const endMessageSplashNewEl = document.getElementById('end-message-splash-new');
+        const finalScoreSplashNewEl = document.getElementById('final-score-splash-new');
+
+        // YENİ POPUP SCORE GÖSTERİM ALANI DOM ELEMENTİ BURAYA TAŞINDI
+        const popupScoreContainer = document.getElementById('popup-score-container'); // Yeni Popup Score
 
         // =======================================================
         // YARDIMCI VE DURUM FONKSİYONLARI
@@ -521,7 +633,6 @@
             // Aksiyon metni kaldırıldı
             currentLevelDisplayEl.textContent = `Seviye: ${gameDifficulty}`; 
             currentSettings = DIFFICULTY_SETTINGS[gameDifficulty]; // Güncel ayarlar
-            gameDescriptionEl.textContent = currentSettings.DESCRIPTION;
             
             // Oyun hakkı bittiğinde başlangıç butonunu devre dışı bırak
             if (remainingPlays <= 0) {
@@ -535,7 +646,7 @@
 
         function showAirtableMessage(message, type = 'success') {
             airtableMessageEl.textContent = message;
-            airtableMessageEl.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg transition-all duration-300 ${
+            airtableTablel.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg transition-all duration-300 ${
                 type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
             }`;
             airtableMessageEl.style.display = 'block';
@@ -607,8 +718,13 @@
         // =======================================================
 
         function startGame() {
+            // Sonuçları gizle
+            finalResultsSplashEl.classList.add('hidden'); // Eski sonuç alanını gizle
+            finalResultsTextEl.classList.add('hidden'); // Yeni sonuç metin alanını gizle
+            submitScoreWrapperEl.classList.add('hidden');
+
             if (gamesPlayedToday >= maxDailyPlays) {
-                return endGame("Günlük Oyun Hakkınız Bitti!");
+                return; // endGame çağrılmaz, sadece başlangıç ekranında kalır
             }
 
             // UI Görünürlüğünü Değiştir
@@ -619,9 +735,6 @@
             gameDifficulty = 1;
             currentScore = 0;
             timeLeft = TOTAL_GAME_TIME_SECONDS;
-            
-            // UI'ı hazırla
-            gameOverScreen.classList.add('hidden');
             
             // Buton ayarları (Oyun butonu)
             actionButtonGame.textContent = DIFFICULTY_SETTINGS[gameDifficulty].ACTION_TEXT;
@@ -648,6 +761,10 @@
             currentSettings = DIFFICULTY_SETTINGS[gameDifficulty];
             updateStatusDisplay(); 
             
+            // Geri Bildirim Alanını İlk Mesajla Güncelle
+            feedbackEl.innerHTML = currentSettings.DESCRIPTION;
+
+
             // *** YENİ BUTON GÖRÜNÜRLÜK MANTIĞI ***
             actionButtonGame.textContent = currentSettings.ACTION_TEXT;
             
@@ -673,7 +790,6 @@
 
             
             actionButtonGame.disabled = false;
-            feedbackEl.textContent = '';
             
             // Mumun yüksekliğini rastgele başlat
             currentIndicatorHeight = getRandomInt(METER_HEIGHT_PX * 0.1, METER_HEIGHT_PX * 0.9);
@@ -980,6 +1096,8 @@
                 
                 // === BUG FIX: NaN CHECK (Kontaminasyon Kontrolü) ===
                 if (!isNaN(finalPoints)) {
+                    // *** YENİ PUAN MEKANİĞİ: ANIMASYONLU ARTIŞ ***
+                    showPopupScore(finalPoints); // POPUP SCORE GÖSTERİMİNİ GERİ ÇAĞIR
                     currentScore += finalPoints;
                 } else {
                     console.error("Score calculation resulted in NaN. finalPoints set to 0 to prevent contamination.");
@@ -990,7 +1108,7 @@
                 feedbackText = `<span class="text-green-400">BAŞARILI İŞLEM! Seviye ${nextLevelDisplay} geçildi!</span>`;
                 
                 if(multiplier > 1) {
-                    feedbackText += `<br><span class="text-yellow-300 text-sm font-bold">BONUS VURUŞ! (x${multiplier} Puan)</span>`;
+                    feedbackText += `<br><span class="text-yellow-400 text-base font-bold">BONUS VURUŞ!</span>`; // Puan kaldırıldı
                 }
                 
                 indicator.style.backgroundColor = '#22c55e'; // Yeşil (Başarılı)
@@ -1008,6 +1126,8 @@
                 // finalPoints zaten 0
                 feedbackText = `<span class="text-red-400">${DIFFICULTY_SETTINGS[1].FAIL_MESSAGE}</span>`;
                 indicator.style.backgroundColor = '#ef4444'; // Kırmızı (Başarısız)
+
+                // HATA DURUMUNDA POPUP ÇIKMASIN
             }
             
             // Buton rengini işlemi yansıtacak şekilde ayarla
@@ -1015,7 +1135,8 @@
             actionButtonGame.style.boxShadow = `0 0 15px ${finalPoints > 0 ? '#22c55e' : '#ef4444'}80`;
 
 
-            feedbackEl.innerHTML = feedbackText + (finalPoints > 0 ? ` (+${finalPoints} Puan)` : '');
+            // Sadece ana geri bildirimi göster. Puan bilgisi POPUP'a taşındı.
+            feedbackEl.innerHTML = feedbackText; 
             updateStatusDisplay();
             
             // Sonraki tura hazırlan
@@ -1023,6 +1144,11 @@
                 actionButtonGame.textContent = currentSettings.ACTION_TEXT; 
                 actionButtonGame.disabled = false;
                 
+                // Eğer seviye max'a ulaştıysa oyunu bitir
+                if (gameDifficulty > MAX_LEVEL) {
+                     return endGame("USTALIK TAMAMLANDI!");
+                }
+
                 setTimeout(() => {
                     if (timeLeft > 0 && !isRunning) {
                          startRound();
@@ -1034,6 +1160,56 @@
             }
         }
 
+        /**
+         * Başarılı vuruşta ekran ortasında büyük, animasyonlu puan gösterir.
+         * Bu versiyon Seviye Kutusu altına ortalanmıştır.
+         * @param {number} score - Kazanılan puan
+         */
+        function showPopupScore(score) {
+            if (score <= 0) return;
+            
+            // 1. Stilleri ve metni ayarla
+            popupScoreContainer.textContent = `+${score}`;
+            popupScoreContainer.classList.remove('text-yellow-400'); // Önceki bonus stilini kaldır
+            popupScoreContainer.style.fontSize = score > 99 ? '3rem' : '4rem'; // Büyük puan büyük yazsın
+            
+            // Bonus kontrolü: puan 90'dan büyükse (yüksek seviyelerde bonus) sarı yap
+            if (score > 90) { 
+                 popupScoreContainer.classList.add('text-yellow-400');
+            } else {
+                 popupScoreContainer.classList.remove('text-yellow-400');
+            }
+
+            // 2. Animasyonu sıfırla ve tetikle
+            // Sınıfları kaldırıp hemen eklemek, CSS animasyonunun yeniden tetiklenmesini sağlar.
+            popupScoreContainer.classList.remove('animate-score-popup');
+            popupScoreContainer.style.opacity = '0';
+            popupScoreContainer.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            popupScoreContainer.style.display = 'none';
+
+            // DOM'un sıfırlamayı işlemesi için küçük bir gecikme (requestAnimationFrame)
+            requestAnimationFrame(() => {
+                popupScoreContainer.classList.add('animate-score-popup');
+                popupScoreContainer.style.opacity = '1';
+                popupScoreContainer.style.transform = 'translate(-50%, -50%) scale(1.0)';
+            });
+
+
+            // 3. Animasyon bittikten sonra sıfırla
+            setTimeout(() => {
+                // Fade out'a başla (CSS transition 500ms)
+                popupScoreContainer.style.opacity = '0';
+            }, 600); 
+
+            // Tamamen görünmez olunca (1000ms sonra) metni sıfırla
+            setTimeout(() => {
+                popupScoreContainer.textContent = '';
+                popupScoreContainer.classList.remove('animate-score-popup');
+                popupScoreContainer.style.display = 'none';
+            }, 1000); 
+        }
+
+
         function endGame(message) {
             cancelAnimationFrame(animationFrameId);
             isRunning = false;
@@ -1041,14 +1217,33 @@
             
             // UI Görünürlüğünü Değiştir
             gameContentEl.classList.add('hidden');
-            splashScreenEl.classList.add('hidden'); // Splash screen'in gizli olduğundan emin ol
-            
+            splashScreenEl.classList.remove('hidden'); // Başlangıç ekranına geri dön
+
             // NaN KONTROLÜ: Final puana geçmeden önce son bir kontrol
             const finalScoreValue = isNaN(currentScore) ? 0 : currentScore;
 
-            document.querySelector('#game-over-screen h2').textContent = message;
-            gameOverScreen.classList.remove('hidden');
-            finalScoreEl.textContent = finalScoreValue;
+            // BAŞLANGIÇ EKRANINDAKİ SONUÇLARI GÜNCELLE
+            endMessageSplashNewEl.textContent = message;
+            finalScoreSplashNewEl.textContent = finalScoreValue;
+            finalResultsTextEl.classList.remove('hidden'); // Yeni sonuç metin alanını göster
+            
+            // Eski sonuç alanını gizle (çakışmayı önlemek için)
+            finalResultsSplashEl.classList.add('hidden'); 
+
+            // Puanı Kaydet butonunu göster
+            submitScoreWrapperEl.classList.remove('hidden');
+
+            // Buton sıralaması: Puanı Kaydet (Üstte), Yeni Deneme (Altta)
+            // Action Button (BAŞLAT) metnini "YENİ DENEME BAŞLAT" olarak ayarla
+            actionButtonSplash.textContent = "YENİ DENEME BAŞLAT";
+            
+            // Eğer hak bittiyse (veya oyun başladığında bitmişse) butonu devre dışı bırak
+            if (maxDailyPlays - gamesPlayedToday <= 0 && gamesPlayedToday > 0) {
+                 actionButtonSplash.disabled = true;
+                 actionButtonSplash.textContent = 'HAKKINIZ BİTTİ';
+            } else {
+                actionButtonSplash.disabled = false;
+            }
         }
         
         // =======================================================
@@ -1063,8 +1258,8 @@
             
             if (AIRTABLE_API_KEY === "YOUR_AIRTABLE_API_KEY") {
                 showAirtableMessage("Hata: Airtable API Anahtarı ayarlanmadı. Puan gönderme simülasyonu yapıldı.", 'error');
-                document.getElementById('submit-score-btn').disabled = true;
-                document.getElementById('submit-score-btn').textContent = 'API Yapılandırılmadı';
+                submitScoreBtnSplash.disabled = true;
+                submitScoreBtnSplash.textContent = 'API Yapılandırılmadı';
                 return;
             }
 
@@ -1079,8 +1274,8 @@
                 }
             };
             
-            document.getElementById('submit-score-btn').disabled = true;
-            document.getElementById('submit-score-btn').textContent = 'Gönderiliyor...';
+            submitScoreBtnSplash.disabled = true;
+            submitScoreBtnSplash.textContent = 'Gönderiliyor...';
 
             try {
                 const response = await fetch(url, {
@@ -1101,7 +1296,7 @@
             } catch (error) {
                 showAirtableMessage("Ağ hatası: Lütfen internet bağlantınızı kontrol edin.", 'error');
             } finally {
-                document.getElementById('submit-score-btn').textContent = 'Puan Gönderildi';
+                submitScoreBtnSplash.textContent = 'Puan Gönderildi';
             }
         }
 
@@ -1116,7 +1311,7 @@
 
             // Başlangıç ekranını göster
             gameContentEl.classList.add('hidden');
-            gameOverScreen.classList.add('hidden');
+            // gameOverScreen.classList.add('hidden'); // Kaldırıldı
             splashScreenEl.classList.remove('hidden');
             
             updateStatusDisplay(); // Hak sayısını günceller
