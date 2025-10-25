@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuyBar (10 Seviyeli Çift Hedef)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+        
+        /* ANA ARKA PLAN: SADE SİYAH */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d1117; /* Koyu arkaplan */
@@ -15,38 +16,74 @@
         .container {
             min-height: 10vh;
         }
-        
-        /* DİJİTAL FONT SINIFI (Glow kaldırıldı, sadece font) */
+
+        /* --- TEMA RENKLERİ --- */
+        /* Ana Vurgu Rengi (Neon Yeşil - Aero Glass teması) */
+        .neon-green { color: #39ff14; } 
+        .bg-neon-green { background-color: #39ff14; }
+        .border-neon-green { border-color: #39ff14; }
+
+        /* --- OYUN İÇİ SADE TEMA (Referans Görselden) --- */
+        .game-inner-theme {
+            background-color: #000; 
+            background-image: linear-gradient(to right, #1a1a1a 1px, transparent 1px),
+                              linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
+            background-size: 20px 20px; 
+            border-radius: 0;
+            border: 1px solid #0ff; /* Turkuaz çerçeve */
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
         .digital-text {
             font-family: 'Share Tech Mono', monospace;
-            color: #39ff14;
+            color: #0ff; /* Neon Turkuaz */
+        }
+        /* Durum Çubuğu Stili */
+        #status-display {
+            background-color: transparent; 
+            border: 1px solid #0ff; 
+            box-shadow: none; 
+        }
+        /* Seviye Kutusu Stili */
+        #current-level-display {
+            background-color: transparent;
+            border: 1px solid #0ff;
+            color: #0ff; 
+            box-shadow: none;
         }
 
-        /* CYBERPUNK GLASS STİLİ */
+        /* --- KART VE BUTONLAR (Aero Glass Teması) --- */
         .game-card {
             max-width: 400px; 
             width: 100%;
-            background-color: rgba(22, 27, 34, 0.7); /* %70 Opak Siyah */
+            background-color: rgba(22, 27, 34, 0.7); 
             backdrop-filter: blur(10px); 
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 8px rgba(57, 255, 20, 0.1); /* Neon Glow */
-            border: 1px solid rgba(57, 255, 20, 0.5); /* Neon Çerçeve */
-            padding: 0; /* İç dolgu kaldırıldı */
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 8px rgba(57, 255, 20, 0.1); 
+            border: 1px solid rgba(57, 255, 20, 0.5); 
+            padding: 0; 
         }
-        
-        /* Dikey Ölçer (Meter) Stilleri */
-        .meter-container {
-            width: 50px; 
-            height: 300px; 
-            background-color: #000000;
-            border-radius: 8px;
-            position: relative;
-            margin: 0 auto;
-            border: 2px solid #2f333a;
-             /* Bar etrafına hafif glow eklenmesi */
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.1); 
+
+        .btn-action {
+            /* AERO GLASS/3D Efektleri */
+            transition: all 0.3s ease;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            
+            background-color: rgba(57, 255, 20, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(57, 255, 20, 0.5); 
+            
+            color: #fff; /* Buton yazısı her zaman beyaz */
+            text-shadow: 0 0 5px rgba(0,255,0,0.8), 0 0 10px rgba(0,255,0,0.5); /* Neon yeşil gölge */
         }
-        
-        /* Hareket Eden Gösterge (Mum Gövdesi) */
+        .btn-action:hover {
+            transform: scale(1.02);
+            background-color: rgba(57, 255, 20, 0.35); 
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.8), inset 0 0 15px rgba(57, 255, 20, 0.7); 
+        }
+        /* --- Kalan Stiller --- */
+
+        /* Mum Çubuğu */
         #indicator {
             position: absolute;
             width: 30px; 
@@ -58,175 +95,50 @@
             border-radius: 2px 2px 0 0; 
         }
 
-        /* Hedef Bölgeler için genel stil */
+        /* Hedef Bölgeler */
         .target-zone { 
             position: absolute;
             width: 100%;
             left: 0;
             pointer-events: none;
-            opacity: 0.7; /* Neon hedefler için artırıldı */
+            opacity: 0.7; 
             border-radius: 4px;
         }
-        
-        /* Hedef Bölge 1 (Primary - Neon Yeşil) */
         #target-zone-1 {
             background-color: rgba(57, 255, 20, 0.3); 
             border: 1px solid #39ff14;
             box-shadow: 0 0 8px rgba(57, 255, 20, 0.8);
         }
-        /* Hedef Bölge 2 (Secondary/Bonus - Mavi) */
         #target-zone-2 {
             background-color: rgba(59, 130, 246, 0.3); 
             border: 1px solid #3b82f6;
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
         }
-
-        /* Durum Çubuğu Stili (Temiz ve Okunaklı) */
-        #status-display {
-            background-color: rgba(10, 10, 10, 0.7); 
-            border: 1px solid rgba(57, 255, 20, 0.2); 
-            box-shadow: 0 0 5px rgba(57, 255, 20, 0.1);
-        }
-        
-        /* GERİ BİLDİRİM KARTI (Yeni) */
-        .feedback-card {
-            /* TAŞMA DÜZELTMESİ İÇİN EK GENİŞLİK VE ORTALAMA */
-            width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-            
-            background-color: rgba(10, 10, 10, 0.8);
-            border: 1px solid rgba(57, 255, 20, 0.4);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
-            padding: 8px; /* Padding korundu */
-            margin-top: 24px;
-        }
-        /* Geri Bildirim Metni Taşıma Kuralı */
-        #feedback {
-             word-break: break-word; /* Uzun kelimeleri kırar */
+        #meter-container {
+            width: 50px; 
+            height: 300px; 
+            background-color: #000000;
+            border-radius: 8px;
+            position: relative;
+            margin: 0 auto;
+            border: 2px solid #2f333a;
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.1); 
         }
 
+        /* Diğer Renkler */
+        .text-green-400 { color: #39ff14; } 
+        .text-yellow-400 { color: #f5f542; } 
 
-        /* SEVİYE GÖSTERGE KONTEYNERİ */
-        #level-container-wrapper {
-            position: relative; /* Merkezi konteyner için */
-            display: flex;
-            justify-content: center; /* Yatay ortalama */
-            /* Dikey Ortalama için yeni marjlar */
-            margin-bottom: 12px; 
-            margin-top: 12px; 
-            z-index: 10;
-        }
-
-        #current-level-display {
-            /* Level Container Stili */
-            background-color: rgba(22, 27, 34, 0.8);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(57, 255, 20, 0.5);
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-            color: #39ff14; /* Neon Yeşil - Okunabilir */
-            font-weight: 700;
-        }
-        
-        .target-level-label {
-            color: #39ff14; /* Neon Yeşil */
-            font-weight: 700;
-        }
-
-        /* Durdur Butonu için AERO GLASS ve STİL */
-        .btn-action {
-            transition: all 0.3s ease;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-shadow: 0 0 5px #000; 
-            
-            /* AERO GLASS/3D Efektleri */
-            background-color: rgba(57, 255, 20, 0.2); /* Daha şeffaf başlangıç */
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(57, 255, 20, 0.4);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 
-                        inset 0 0 10px rgba(57, 255, 20, 0.5); /* İç neon gölge */
-            
-            /* Neon Vurgu */
-            color: #39ff14; 
-        }
-        .btn-action:hover {
-            transform: scale(1.02);
-            background-color: rgba(57, 255, 20, 0.35); /* Hafif opaklaşma */
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.8), /* Dış glow artır */
-                        inset 0 0 15px rgba(57, 255, 20, 0.7); /* İç glow artır */
-        }
-        .btn-action[disabled] {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
-            background-color: rgba(57, 255, 20, 0.1);
-        }
-
-        /* Hata/Bitiş Butonları - Exit butonu da güncellendi */
-        #submit-score-btn, .bg-indigo-600, #exit-game-btn {
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-            backdrop-filter: blur(3px); /* Glass butona da hafif blur */
-        }
-
-        .text-green-400 { color: #39ff14; } /* Başlık Neon Yeşil */
-        .text-yellow-400 { color: #f5f542; } /* Sarımtırak Vurgu */
-        
-        /* Game Over Ekranı Geçişi */
-        .game-over-transition {
-             transition: opacity 0.5s ease-in-out;
-        }
-
-        /* Yeni Pozisyon Kapatma Butonu (AERO GLASS KIRMIZI) */
-        #exit-game-btn {
-            background-color: rgba(239, 68, 68, 0.2); /* Kırmızı/Hata Rengi */
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4), inset 0 0 5px rgba(239, 68, 68, 0.3);
-            color: #ef4444; /* Kırmızı metin */
-        }
-        #exit-game-btn:hover {
-            background-color: rgba(239, 68, 68, 0.35);
-            transform: scale(1.02);
-        }
-        
-        /* SPLASH SCREEN İYİLEŞTİRMELERİ */
-        .splash-inner-content {
-            padding: 24px; /* Oyun içeriğindeki padding'i simüle etmek için */
-        }
-
-        /* Puan Animasyonu için CSS */
-        .score-boost {
-            transition: color 0.3s ease, transform 0.3s ease;
-            display: inline-block;
-        }
-        .score-animate {
-            color: #39ff14 !important; /* Yeşil vurgu (kesinlikle yeşil olsun diye !important) */
-            transform: scale(1.1); /* Hafif büyüme */
-        }
-        
-        /* YENİ POPUP SCORE STİLİ */
+        /* POPUP SCORE */
         #popup-score-container {
-            position: absolute;
-            top: 25%; /* Level kutusu altına ortalandı */
-            left: 50%; 
-            z-index: 1000; 
-            transform: translate(-50%, -50%) scale(0.5); /* Başlangıçta küçük ve merkezde */
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Yaylı animasyon */
-            pointer-events: none; /* Tıklanabilir olmasın */
-            color: #39ff14;
-            font-size: 3rem; /* Büyük font */
-            font-weight: 900;
-            /* Stroke ve Gölge */
+            /* Stil aynı kaldı */
+            position: absolute; top: 25%; left: 50%; z-index: 1000;
+            transform: translate(-50%, -50%) scale(0.5); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            pointer-events: none; color: #39ff14; font-size: 3rem; font-weight: 900;
             text-shadow: 0 0 8px #39ff14, 0 0 15px rgba(255, 255, 255, 0.5); 
             -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2); 
-            display: none; /* Başlangıçta gizli */
-        }
-        .animate-score-popup {
-            display: block !important;
-            transform: translate(-50%, -50%) scale(1.0); /* Büyüt */
-            opacity: 1;
+            display: none; 
         }
     </style>
 </head>
@@ -234,45 +146,29 @@
 
     <div id="game-container" class="container flex flex-col items-center justify-center p-4">
 
-        <!-- GAME CARD GENİŞLİK SABİTLEMESİ KALDIRILDI VE DOLDURMASI İÇİN W-FULL EKLENDİ -->
-        <div class="game-card w-full rounded-xl relative"> 
-             <!-- BAŞLANGIÇ EKRANI -->
-            <div id="splash-screen" class="text-center relative">
+        <!-- GAME CARD GENİŞLİK SABİTLEMESİ KALDIRILDI VE DOLDURMASI İÇİN W-FULL EKLENDİ --><div class="game-card w-full rounded-xl relative"> 
+             <!-- BAŞLANGIÇ EKRANI --><div id="splash-screen" class="text-center relative">
                 
-                <!-- GÖRSEL ÇERÇEVEYİ TAM KAPLAMALI -->
-                <img src="https://cdn.prod.website-files.com/67fb1cd83af51c4fe96dacb2/68f2c18cc1ebefc22db2452a_dikey.png" alt="Cyberpunk Arkaplan Makinesi" class="w-full h-auto rounded-xl object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x400/0a0a0a/39ff14?text=CYBERPUNK+UI+BASE';">
+                <!-- GÖRSEL ÇERÇEVEYİ TAM KAPLAMALI --><img src="https://cdn.prod.website-files.com/67fb1cd83af51c4fe96dacb2/68f2c18cc1ebefc22db2452a_dikey.png" alt="Cyberpunk Arkaplan Makinesi" class="w-full h-auto rounded-xl object-cover" onerror="this.onerror=null; this.src='https://placehold.co/400x400/0a0a0a/39ff14?text=CYBERPUNK+UI+BASE';">
                 
-                <!-- ÜSTTEKİ YAZI VE BUTONLAR GÖRSELİN ÜZERİNDE OLMALI -->
-                <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-between p-6">
+                <!-- ÜSTTEKİ YAZI VE BUTONLAR GÖRSELİN ÜZERİNDE OLMALI --><div class="absolute top-0 left-0 w-full h-full flex flex-col justify-between p-6">
                     
-                    <!-- Kalan Hak Yazısı -->
-                    <p id="splash-info" class="text-sm text-gray-400 text-left mb-6 bg-black/40 p-2 rounded-lg self-start">
+                    <!-- Kalan Hak Yazısı --><p id="splash-info" class="text-sm text-gray-400 text-left mb-6 bg-black/40 p-2 rounded-lg self-start">
                         Günlük Hakkınız: <span id="splash-daily-plays" class="text-yellow-400">0</span>
                     </p>
 
-                    <!-- OYUN BİTİŞ SONUÇ ALANI -->
-                    <div id="final-results-splash" class="text-center w-full mb-10 hidden pt-20"> <!-- mb-10 ve pt-20 ile yukarı kaydırıldı -->
-                         <h2 id="end-message-splash" class="text-xl font-bold text-red-400 mb-2">SÜRE BİTTİ!</h2>
-                         <p class="text-lg text-white">Final Puanınız: <span id="final-score-splash" class="text-green-400 font-extrabold">0</span></p>
-                    </div>
+                    <!-- OYUN BİTİŞ SONUÇ ALANI (Eski, Kaldırıldı) --><div id="final-results-splash" class="hidden"></div> 
 
-                    <!-- Butonlar ve Sonuçlar İçin Yeni Konumlandırma -->
-                    <div class="flex flex-col items-center w-full mt-auto">
+                    <!-- Butonlar ve Sonuçlar İçin Yeni Konumlandırma --><div class="flex flex-col items-center w-full mt-auto">
 
-                        <!-- Final Sonuç Metni (Yeni Konum) -->
-                        <div id="final-results-text" class="text-center w-full mb-6 hidden"> 
+                        <!-- Final Sonuç Metni (Yeni Konum - Butonların Üstü) --><div id="final-results-text" class="text-center w-full mb-6 hidden"> 
                             <h2 id="end-message-splash-new" class="text-xl font-bold text-red-400 mb-2">SÜRE BİTTİ!</h2>
                             <p class="text-lg text-white">Final Puanınız: <span id="final-score-splash-new" class="text-green-400 font-extrabold">0</span></p>
                         </div>
 
-
-                        <!-- Puanı Kaydet Butonu -->
-                        <div id="submit-score-wrapper" class="hidden w-full mt-4">
+                        <!-- Puanı Kaydet Butonu (Kaldırıldı) --><!-- <div id="submit-score-wrapper" class="hidden w-full mt-4">
                             <button id="submit-score-btn-splash" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg w-full" onclick="submitScore()">PUANI KAYDET</button>
-                        </div>
-                        
-                        <!-- Yeni Deneme Başlat Butonu -->
-                        <button id="action-button" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg text-2xl mt-4" onclick="startGame()">
+                        </div> --><!-- Yeni Deneme Başlat Butonu --><button id="action-button" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg text-2xl mt-8" onclick="startGame()">
                             BAŞLAT
                         </button>
                     </div>
@@ -280,60 +176,41 @@
                 </div>
             </div>
 
-            <!-- OYUN ALANI (Gizli Başlar) -->
-            <div id="game-content" class="hidden p-8"> <!-- OYUN İÇİ DOLGU BURAYA TAŞINDI -->
-                 <!-- game-description kaldırıldı -->
-            
-                <!-- YENİ STATÜS DÜZENLEMESİ: Sadece 3 Bilgi -->
-                <div id="status-display" class="mb-6 p-3 rounded-lg text-center font-semibold grid grid-cols-3 gap-2 digital-text">
+            <!-- OYUN ALANI (Gizli Başlar) --><div id="game-content" class="hidden p-8 game-inner-theme"> <!-- OYUN İÇİ DOLGU BURAYA TAŞINDI VE YENİ TEMA EKLENDİ --><!-- YENİ STATÜS DÜZENLEMESİ: Sadece 3 Bilgi --><div id="status-display" class="mb-6 p-3 rounded-md text-center font-semibold grid grid-cols-3 gap-2 digital-text">
                     <span id="daily-plays" class="text-yellow-400 col-span-1">❤️: 0</span> 
                     <span id="current-score" class="col-span-1 text-white">Puan: 0</span>
                     <span id="timer" class="text-red-400 col-span-1">Süre: 90s</span>
                 </div>
                 
-                <!-- YENİ SEVİYE KONUMU: STATUS DISPLAY altı, MUM üstü -->
-                <div id="level-container-wrapper" class="text-center mb-4 mt-[-12px]">
+                <!-- YENİ SEVİYE KONUMU: STATUS DISPLAY altı, MUM üstü --><div id="level-container-wrapper" class="text-center mb-4 mt-[-12px]">
                     <span id="current-level-display" class="py-1 px-3 rounded-md text-sm">Seviye: 1</span>
                 </div>
 
                 <div id="game-area" class="relative">
                     
-                    <!-- YENİ POPUP SCORE GÖSTERİM ALANI (Seviye altına) -->
-                    <div id="popup-score-container" class="digital-text absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-green-400">
+                    <!-- YENİ POPUP SCORE GÖSTERİM ALANI (Seviye altına) --><div id="popup-score-container" class="digital-text absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-green-400">
                         +0
                     </div>
 
-                    <div class="flex justify-center items-end relative pt-6"> <!-- pt-6 ile mum aşağı kaydırıldı -->
-                        
-                        <!-- Dikey Fibonacci Ölçer (Grafik) -->
-                        <div id="meter-container" class="meter-container">
-                            <!-- 50% Çizgisi (Renk Değişim Referansı) -->
-                            <div class="absolute w-full h-[1px] bg-yellow-500/80" style="bottom: 150px; pointer-events: none;"></div>
-                            <!-- Fibonacci Seviye Çizgileri -->
-                            <div id="fib-lines-container"></div> 
-                            <!-- Hedef Bölge 1 (Primary/Single) -->
-                            <div id="target-zone-1" class="target-zone"></div>
-                            <!-- Hedef Bölge 2 (Secondary/Bonus) -->
-                            <div id="target-zone-2" class="target-zone hidden"></div>
-                            <!-- Hareket Eden Gösterge (Mum) -->
-                            <div id="indicator"></div>
+                    <div class="flex justify-center items-end relative pt-6"> <!-- pt-6 ile mum aşağı kaydırıldı --><!-- Dikey Fibonacci Ölçer (Grafik) --><div id="meter-container" class="meter-container">
+                            <!-- 50% Çizgisi (Renk Değişim Referansı) --><div class="absolute w-full h-[1px] bg-yellow-500/80" style="bottom: 150px; pointer-events: none;"></div>
+                            <!-- Fibonacci Seviye Çizgileri --><div id="fib-lines-container"></div> 
+                            <!-- Hedef Bölge 1 (Primary/Single) --><div id="target-zone-1" class="target-zone"></div>
+                            <!-- Hedef Bölge 2 (Secondary/Bonus) --><div id="target-zone-2" class="target-zone hidden"></div>
+                            <!-- Hareket Eden Gösterge (Mum) --><div id="indicator"></div>
                         </div>
 
-                        <!-- Etiketler KALDIRILDI -->
-                    </div>
+                        <!-- Etiketler KALDIRILDI --></div>
 
-                    <!-- GERİ BİLDİRİM KARTI (Açıklama ve Sonuçlar burada görüntülenecek) -->
-                    <div id="feedback-wrapper" class="feedback-card text-center digital-text">
+                    <!-- GERİ BİLDİRİM KARTI (Açıklama ve Sonuçlar burada görüntülenecek) --><div id="feedback-wrapper" class="feedback-card text-center digital-text mt-4 py-2">
                         <div id="feedback" class="font-bold text-sm">ALIM: Fiyat geri çekilmenin tam üzerine geldiğinde AL butonuna bas!</div>
                     </div>
 
 
-                    <!-- Aksiyon Butonu (AL/TP/SAT) -->
-                    <button id="action-button-game" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg mt-6 text-2xl" onclick="handleGameClick()">
+                    <!-- Aksiyon Butonu (AL/TP/SAT) --><button id="action-button-game" class="btn-action w-full text-white font-bold py-4 px-4 rounded-lg mt-6 text-2xl" onclick="handleGameClick()">
                         AL
                     </button>
-                    <!-- Pozisyon Kapatma Butonu -->
-                    <button id="exit-game-btn" class="w-full text-white font-semibold py-2 px-4 rounded-lg mt-3 text-sm hidden" onclick="exitGame()">
+                    <!-- Pozisyon Kapatma Butonu --><button id="exit-game-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg mt-3 text-sm hidden" onclick="exitGame()">
                         POZİSYONU KAPAT & ÇIK
                     </button>
                 </div>
@@ -341,10 +218,7 @@
 
         </div>
 
-        <!-- Airtable Mesaj Kutusu -->
-        <div id="airtable-message" class="fixed bottom-4 right-4 p-3 rounded-lg shadow-lg hidden"></div>
-        
-    </div>
+        <!-- Airtable Mesaj Kutusu (Kaldırıldı) --><!-- <div id="airtable-message" class="fixed bottom-4 right-4 p-3 rounded-lg shadow-lg hidden"></div> --></div>
 
     <script>
         // FIREBASE İÇİN ZORUNLU DEĞİŞKENLER
@@ -354,17 +228,15 @@
         const apiKey = ""; 
 
         // =======================================================
-        // AIRTABLE ENTEGRASYON BİLGİLERİ (Kendi bilgilerinizle değiştirin!)
+        // MAKE (ESKİ ADIYLA INTEGROMAT) WEBHOOK URL'NİZ BURAYA GELİYOR
         // =======================================================
-        const AIRTABLE_API_KEY = "YOUR_AIRTABLE_API_KEY";
-        const AIRTABLE_BASE_ID = "YOUR_AIRTABLE_BASE_ID";
-        const AIRTABLE_TABLE_NAME = "MiniGameScores";
+        const MAKE_WEBHOOK_URL = "YOUR_WEBHOOK_URL"; // Burayı kendi Make webhook URL'nizle değiştirin
 
         // =======================================================
         // OYUN KONFİGÜRASYONU VE DEĞİŞKENLER
         // =======================================================
         const NFT_RANK_LIMITS = { 1: 3, 2: 5, 3: 7 };
-        const nftRank = 2; // Simüle edilen rütbe (5 oyun hakkı)
+        const nftRank = 1; // NFT Rank 1 olarak güncellendi. (Hak: 3)
         const FIB_LEVELS = [0.236, 0.382, 0.5, 0.618, 0.786];
         const METER_HEIGHT_PX = 300; // Ölçer yüksekliği (CSS'deki ile aynı olmalı)
         const TOTAL_GAME_TIME_SECONDS = 90; // Toplam oyun süresi 90 saniye
@@ -567,7 +439,7 @@
         const splashScreenEl = document.getElementById('splash-screen'); // Yeni başlangıç ekranı konteyneri
         // const gameOverScreen = document.getElementById('game-over-screen'); // Kaldırıldı
         const finalScoreEl = document.getElementById('final-score'); // Kaldırıldı
-        const airtableMessageEl = document.getElementById('airtable-message');
+        // const airtableMessageEl = document.getElementById('airtable-message'); // Kaldırıldı
         const indicator = document.getElementById('indicator');
         const targetZone1 = document.getElementById('target-zone-1'); // Birincil Hedef
         const targetZone2 = document.getElementById('target-zone-2'); // İkincil/Bonus Hedef
@@ -581,8 +453,8 @@
         const endMessageSplashEl = document.getElementById('end-message-splash'); // Eski
         const finalScoreSplashEl = document.getElementById('final-score-splash'); // Eski
 
-        const submitScoreWrapperEl = document.getElementById('submit-score-wrapper');
-        const submitScoreBtnSplash = document.getElementById('submit-score-btn-splash');
+        // const submitScoreWrapperEl = document.getElementById('submit-score-wrapper'); // Kaldırıldı
+        // const submitScoreBtnSplash = document.getElementById('submit-score-btn-splash'); // Kaldırıldı
         
         // YENİ SONUÇ METİN ALANI VE ELEMENTLERİ
         const finalResultsTextEl = document.getElementById('final-results-text');
@@ -642,17 +514,6 @@
                  actionButtonSplash.disabled = false;
                  actionButtonSplash.textContent = 'BAŞLAT';
             }
-        }
-
-        function showAirtableMessage(message, type = 'success') {
-            airtableMessageEl.textContent = message;
-            airtableTablel.className = `fixed bottom-4 right-4 p-3 rounded-lg shadow-lg transition-all duration-300 ${
-                type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-            }`;
-            airtableMessageEl.style.display = 'block';
-            setTimeout(() => {
-                airtableMessageEl.style.display = 'none';
-            }, 5000);
         }
         
         function drawFibLines() {
@@ -721,7 +582,7 @@
             // Sonuçları gizle
             finalResultsSplashEl.classList.add('hidden'); // Eski sonuç alanını gizle
             finalResultsTextEl.classList.add('hidden'); // Yeni sonuç metin alanını gizle
-            submitScoreWrapperEl.classList.add('hidden');
+            // submitScoreWrapperEl.classList.add('hidden'); // Kaldırıldı
 
             if (gamesPlayedToday >= maxDailyPlays) {
                 return; // endGame çağrılmaz, sadece başlangıç ekranında kalır
@@ -788,7 +649,7 @@
             actionButtonGame.style.backgroundColor = buttonColor;
             actionButtonGame.style.boxShadow = `0 0 15px ${buttonColor}80`; /* Buton Neon Glow */
 
-            
+
             actionButtonGame.disabled = false;
             
             // Mumun yüksekliğini rastgele başlat
@@ -1230,8 +1091,11 @@
             // Eski sonuç alanını gizle (çakışmayı önlemek için)
             finalResultsSplashEl.classList.add('hidden'); 
 
-            // Puanı Kaydet butonunu göster
-            submitScoreWrapperEl.classList.remove('hidden');
+            // Puanı Kaydet butonunu göster (Kaldırıldı)
+            // submitScoreWrapperEl.classList.remove('hidden');
+
+            // Puanı Make Webhook'a gönder
+            sendScoreToWebhook(finalScoreValue, gameDifficulty);
 
             // Buton sıralaması: Puanı Kaydet (Üstte), Yeni Deneme (Altta)
             // Action Button (BAŞLAT) metnini "YENİ DENEME BAŞLAT" olarak ayarla
@@ -1247,56 +1111,44 @@
         }
         
         // =======================================================
-        // AIRTABLE ENTEGRASYONU
+        // MAKE WEBHOOK ENTEGRASYONU (Eski Airtable yerine)
         // =======================================================
 
-        async function submitScore() {
-            // Kullanıcı ID simülasyonu
-            const userId = 'USER-' + crypto.randomUUID().substring(0, 8); 
-            // NaN KONTROLÜ
-            const score = isNaN(currentScore) ? 0 : currentScore;
-            
-            if (AIRTABLE_API_KEY === "YOUR_AIRTABLE_API_KEY") {
-                showAirtableMessage("Hata: Airtable API Anahtarı ayarlanmadı. Puan gönderme simülasyonu yapıldı.", 'error');
-                submitScoreBtnSplash.disabled = true;
-                submitScoreBtnSplash.textContent = 'API Yapılandırılmadı';
+        async function sendScoreToWebhook(score, maxLevelReached) {
+            if (!MAKE_WEBHOOK_URL || MAKE_WEBHOOK_URL === "YOUR_WEBHOOK_URL") {
+                console.warn("Make Webhook URL ayarlanmamış. Puan gönderilemedi.");
+                // showAirtableMessage("Hata: Make Webhook URL ayarlanmadı. Puan gönderilemedi.", 'error'); // Eski Airtable mesaj kutusu kaldırıldı
                 return;
             }
 
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
-            const data = {
-                fields: {
-                    "UserId": userId,
-                    "Score": score,
-                    "GameName": "BuyBar",
-                    "DatePlayed": new Date().toISOString().split('T')[0],
-                    "MaxLevelReached": gameDifficulty 
-                }
-            };
+            const userId = 'USER-' + crypto.randomUUID().substring(0, 8); // Örnek Kullanıcı ID'si
             
-            submitScoreBtnSplash.disabled = true;
-            submitScoreBtnSplash.textContent = 'Gönderiliyor...';
-
             try {
-                const response = await fetch(url, {
+                const response = await fetch(MAKE_WEBHOOK_URL, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ records: [data] })
+                    body: JSON.stringify({
+                        userId: userId,
+                        score: score,
+                        gameName: "BuyBar",
+                        datePlayed: new Date().toISOString(),
+                        maxLevelReached: maxLevelReached
+                    })
                 });
 
                 if (response.ok) {
-                    showAirtableMessage(`Puan başarıyla Airtable'a gönderildi! Skor: ${score}`, 'success');
+                    console.log("Puan Make webhook'una başarıyla gönderildi!");
+                    // showAirtableMessage("Puan Make webhook'una başarıyla gönderildi!", 'success'); // Eski Airtable mesaj kutusu kaldırıldı
                 } else {
                     const errorData = await response.json();
-                    showAirtableMessage(`Hata: Puan gönderilemedi. ${errorData.error.type}`, 'error');
+                    console.error("Hata: Puan Make webhook'una gönderilemedi.", errorData);
+                    // showAirtableMessage(`Hata: Puan gönderilemedi. ${errorData.message || response.statusText}`, 'error'); // Eski Airtable mesaj kutusu kaldırıldı
                 }
             } catch (error) {
-                showAirtableMessage("Ağ hatası: Lütfen internet bağlantınızı kontrol edin.", 'error');
-            } finally {
-                submitScoreBtnSplash.textContent = 'Puan Gönderildi';
+                console.error("Ağ hatası veya Webhook gönderirken hata:", error);
+                // showAirtableMessage("Ağ hatası: Lütfen internet bağlantınızı kontrol edin.", 'error'); // Eski Airtable mesaj kutusu kaldırıldı
             }
         }
 
