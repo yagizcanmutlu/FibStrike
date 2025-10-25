@@ -11,8 +11,9 @@
         /* ANA ARKA PLAN: SADE SİYAH */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117; /* Koyu arkaplan */
-            /* Dikey ortalamayı bozduğu için padding-top ve padding-bottom kaldırıldı */
+            /* body arka plan rengi kaldırıldı, sadece transparan arkaplan için margin sıfırlandı */
+            background-color: transparent; /* Arka planı tamamen şeffaf yap */
+            margin: 0; /* Tarayıcının varsayılan kenar boşluklarını sıfırla */
         }
         .container {
             /* Ekranın tüm yüksekliğini kapla */
@@ -416,8 +417,8 @@
         // YENİ DUAL TARGET İÇİN STATE'LER
         let targetsForAttraction = []; // [lowY, highY]
         let attractionTargetIndex = 0; // 0: lowY, 1: highY
-        let attractionSwitchCounter = 0;
         const SWITCH_THRESHOLD = 150; // ~2.5 saniyede bir hedef değiştir
+        let attractionSwitchCounter = 0;
 
         let animationFrameId; 
         let isRunning = false;
