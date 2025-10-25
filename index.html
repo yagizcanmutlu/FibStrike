@@ -12,25 +12,20 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d1117; /* Koyu arkaplan */
-            /* Telegram ve mobil güvenli alanlar için */
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
         .container {
             /* Ekranın tüm yüksekliğini kapla */
-            min-height: 100vh; /* `min-h-screen` Tailwind karşılığı */
-            /* Telegram safe area için üst ve alt padding */
-            padding-top: max(1rem, env(safe-area-inset-top)); /* min 1rem, veya safe area kadar */
-            padding-bottom: max(1rem, env(safe-area-inset-bottom)); /* min 1rem, veya safe area kadar */
-            
-            /* Genişliği 100% yap, ancak maksimum genişliği kısıtla */
+            min-height: 100vh;
+            /* Ortalamayı koru */
+            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom)); 
             width: 100%; 
-            max-width: 420px; /* WEB/MASAÜSTÜ İÇİN MAKSİMUM GENİŞLİK */
-            margin: 0 auto; /* ORTALAMA */
+            max-width: none; /* Dış kısıtlamayı kaldır */
         }
 
         /* --- TEMA RENKLERİ --- */
-        /* Ana Vurgu Rengi (Neon Yeşil - Aero Glass teması) */
         .neon-green { color: #39ff14; } 
         .bg-neon-green { background-color: #39ff14; }
         .border-neon-green { border-color: #39ff14; }
@@ -49,13 +44,11 @@
             font-family: 'Share Tech Mono', monospace;
             color: #0ff; /* Neon Turkuaz */
         }
-        /* Durum Çubuğu Stili */
         #status-display {
             background-color: transparent; 
             border: 1px solid #0ff; 
             box-shadow: none; 
         }
-        /* Seviye Kutusu Stili */
         #current-level-display {
             background-color: transparent;
             border: 1px solid #0ff;
@@ -65,19 +58,25 @@
 
         /* --- KART VE BUTONLAR (Aero Glass Teması) --- */
         .game-card {
-            /* Max-width kaldırıldı, genişliği tam kaplayacak */
-            width: 100%;
+            /* DİNAMİK ORANLAMA (EKRAN BOYUTUNA GÖRE) */
+            width: 80vw; /* Ekran genişliğinin %80'i */
+            max-width: 480px; /* Web'de aşırı büyümeyi engelle */
+            height: 90vh; /* Ekran yüksekliğinin %90'ı */
+            max-height: 850px; /* Çok uzun ekranlarda kısıtla */
+            
             background-color: rgba(22, 27, 34, 0.7); 
             backdrop-filter: blur(10px); 
             box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 8px rgba(57, 255, 20, 0.1); 
             border: 1px solid rgba(57, 255, 20, 0.5); 
             padding: 0; 
-            /* Dikeyde de esnek olmalı */
-            flex-grow: 1; /* Mevcut alanı doldurmasını sağla */
+            
             display: flex;
             flex-direction: column;
-            /* Yükseklik kısıtlaması ekle (Telegram'da sıkıntı yaratabilir, ama web'de gerekli) */
-            max-height: 95vh; 
+            
+            /* Mobilde ortalamayı garanti et */
+            align-self: center;
+            justify-content: center;
+            margin: 0 auto;
         }
 
         .btn-action {
@@ -164,10 +163,10 @@
 
     <div id="game-container" class="container flex flex-col items-center justify-center p-4">
 
-        <!-- GAME CARD GENİŞLİK SABİTLEMESİ KALDIRILDI VE DOLDURMASI İÇİN W-FULL EKLENDİ --><div class="game-card w-full rounded-xl relative"> 
+        <!-- GAME CARD DİNAMİK BOYUTLANDIRILDI --><div class="game-card w-full rounded-xl relative"> 
              <!-- BAŞLANGIÇ EKRANI --><div id="splash-screen" class="text-center relative flex-grow flex flex-col justify-between">
                 
-                <!-- GÖRSEL ÇERÇEVEYİ TAM KAPLAMALI --><img src="https://cdn.prod.website-files.com/67fb1cd83af51c4fe96dacb2/68f2c18cc1ebefc22db2452a_dikey.png" alt="Cyberpunk Arkaplan Makinesi" class="w-full h-auto rounded-xl object-cover absolute inset-0" onerror="this.onerror=null; this.src='https://placehold.co/400x400/0a0a0a/39ff14?text=CYBERPUNK+UI+BASE';" style="z-index: 0;">
+                <!-- GÖRSEL ÇERÇEVEYİ TAM KAPLAMALI --><img src="https://cdn.prod.website-files.com/67fb1cd83af51c4fe96dacb2/68f2c18cc1ebefc22db2452a_dikey.png" alt="Cyberpunk Arkaplan Makinesi" class="w-full h-full rounded-xl object-cover absolute inset-0" onerror="this.onerror=null; this.src='https://placehold.co/400x400/0a0a0a/39ff14?text=CYBERPUNK+UI+BASE';" style="z-index: 0;">
                 
                 <!-- ÜSTTEKİ YAZI VE BUTONLAR GÖRSELİN ÜZERİNDE OLMALI --><div class="absolute top-0 left-0 w-full h-full flex flex-col justify-between p-6" style="z-index: 1;">
                     
