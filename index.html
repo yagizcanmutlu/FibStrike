@@ -12,15 +12,12 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d1117; /* Koyu arkaplan */
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            /* Dikey ortalamayı bozduğu için padding-top ve padding-bottom kaldırıldı */
         }
         .container {
             /* Ekranın tüm yüksekliğini kapla */
             min-height: 100vh;
-            /* Ortalamayı koru */
-            padding-top: max(1rem, env(safe-area-inset-top));
-            padding-bottom: max(1rem, env(safe-area-inset-bottom)); 
+            /* Dikey dolgular kaldırıldı (Centering için) */
             width: 100%; 
             max-width: none; /* Dış kısıtlamayı kaldır */
         }
@@ -73,7 +70,7 @@
             display: flex;
             flex-direction: column;
             
-            /* Mobilde ortalamayı garanti et */
+            /* Ortalamayı koru */
             align-self: center;
             justify-content: center;
             margin: 0 auto;
@@ -161,7 +158,8 @@
 </head>
 <body class="text-white">
 
-    <div id="game-container" class="container flex flex-col items-center justify-center p-4">
+    <!-- p-4 sınıfı yatay kayıklığı ve yukarıdaki boşluğu engellemek için kaldırıldı -->
+    <div id="game-container" class="container flex flex-col items-center justify-center">
 
         <!-- GAME CARD DİNAMİK BOYUTLANDIRILDI --><div class="game-card w-full rounded-xl relative"> 
              <!-- BAŞLANGIÇ EKRANI --><div id="splash-screen" class="text-center relative flex-grow flex flex-col justify-between">
@@ -1061,11 +1059,11 @@
             popupScoreContainer.classList.remove('animate-score-popup');
             popupScoreContainer.style.opacity = '0';
             popupScoreContainer.style.transform = 'translate(-50%, -50%) scale(0.5)';
-            popupScoreContainer.style.display = 'none';
+            popupScoreContainer.style.display = 'block'; // Animasyonu başlatmak için göster
 
             // DOM'un sıfırlamayı işlemesi için küçük bir gecikme (requestAnimationFrame)
             requestAnimationFrame(() => {
-                popupScoreContainer.classList.add('animate-score-popup');
+                // popupScoreContainer.classList.add('animate-score-popup'); // Bu satır fazlalık, transition ile yönettik.
                 popupScoreContainer.style.opacity = '1';
                 popupScoreContainer.style.transform = 'translate(-50%, -50%) scale(1.0)';
             });
@@ -1080,7 +1078,7 @@
             // Tamamen görünmez olunca (1000ms sonra) metni sıfırla
             setTimeout(() => {
                 popupScoreContainer.textContent = '';
-                popupScoreContainer.classList.remove('animate-score-popup');
+                // popupScoreContainer.classList.remove('animate-score-popup'); // Bu satır fazlalık
                 popupScoreContainer.style.display = 'none';
             }, 1000); 
         }
