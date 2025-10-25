@@ -14,6 +14,14 @@
             /* body arka plan rengi kaldırıldı, sadece transparan arkaplan için margin sıfırlandı */
             background-color: transparent; /* Arka planı tamamen şeffaf yap */
             margin: 0; /* Tarayıcının varsayılan kenar boşluklarını sıfırla */
+            
+            /* MERKEZLEME İÇİN EKLENDİ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Taşmayı engelle */
         }
         .container {
             /* Ekranın tüm yüksekliğini kapla */
@@ -27,6 +35,15 @@
         .neon-green { color: #39ff14; } 
         .bg-neon-green { background-color: #39ff14; }
         .border-neon-green { border-color: #39ff14; }
+
+        /* --- HATA GÖRSEL GERİ BİLDİRİMİ İÇİN ANİMASYON --- */
+        @keyframes flash-error {
+            0%, 100% { box-shadow: 0 0 0 rgba(255, 0, 0, 0); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.6); }
+        }
+        .flash-error {
+            animation: flash-error 0.5s ease-in-out;
+        }
 
         /* --- OYUN İÇİ SADE TEMA (Referans Görselden) --- */
         .game-inner-theme {
@@ -160,7 +177,8 @@
 <body class="text-white">
 
     <!-- p-4 sınıfı yatay kayıklığı ve yukarıdaki boşluğu engellemek için kaldırıldı -->
-    <div id="game-container" class="container flex flex-col items-center justify-center">
+    <!-- body stili ile ortalama yapıldığı için flex sınıfları kaldırıldı -->
+    <div id="game-container" class="container">
 
         <!-- GAME CARD DİNAMİK BOYUTLANDIRILDI --><div class="game-card w-full rounded-xl relative"> 
              <!-- BAŞLANGIÇ EKRANI --><div id="splash-screen" class="text-center relative flex-grow flex flex-col justify-between">
@@ -461,6 +479,9 @@
         const gameDescriptionEl = document.getElementById('game-description'); // KALDIRILDI
         const exitGameBtn = document.getElementById('exit-game-btn');
         const splashDailyPlaysEl = document.getElementById('splash-daily-plays'); // Başlangıç ekranındaki hak göstergesi
+        // Ana Konteyner
+        const gameContainerEl = document.getElementById('game-container');
+
 
         // Yeni Splash Sonuç Alanı Elementleri
         const finalResultsSplashEl = document.getElementById('final-results-splash'); // Eski sonuç metin alanı (kullanılmayacak, yeni final-results-text kullanılacak)
@@ -1001,6 +1022,12 @@
                 // finalPoints zaten 0
                 feedbackText = `<span class="text-red-400">${DIFFICULTY_SETTINGS[1].FAIL_MESSAGE}</span>`;
                 indicator.style.backgroundColor = '#ef4444'; // Kırmızı (Başarısız)
+
+                // HATA GÖRSEL GERİ BİLDİRİMİ: Container'ı kırmızı ile flash'la
+                gameContainerEl.classList.add('flash-error');
+                setTimeout(() => {
+                    gameContainerEl.classList.remove('flash-error');
+                }, 500); 
 
                 // HATA DURUMUNDA POPUP ÇIKMASIN
             }
