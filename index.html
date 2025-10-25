@@ -17,15 +17,15 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         .container {
-            /* Ekranın tüm yüksekliğini kapla */
-            min-height: 100vh; /* `min-h-screen` Tailwind karşılığı */
+            /* Dikey yüksekliği içeriğe göre ayarla (min-h: auto) */
+            min-height: auto; 
             /* Telegram safe area için üst ve alt padding */
             padding-top: max(1rem, env(safe-area-inset-top)); /* min 1rem, veya safe area kadar */
             padding-bottom: max(1rem, env(safe-area-inset-bottom)); /* min 1rem, veya safe area kadar */
             
             /* Genişliği 100% yap, ancak maksimum genişliği kısıtla */
             width: 100%; 
-            max-width: 420px; /* WEB/MASAÜSTÜ İÇİN MAKSİMUM GENİŞLİK */
+            max-width: 480px; /* WEB/MASAÜSTÜ İÇİN MAKSİMUM GENİŞLİK (420px'den 480px'e çıkarıldı) */
             margin: 0 auto; /* ORTALAMA */
         }
 
@@ -76,6 +76,8 @@
             flex-grow: 1; /* Mevcut alanı doldurmasını sağla */
             display: flex;
             flex-direction: column;
+            /* Yükseklik kısıtlaması ekle (Telegram'da sıkıntı yaratabilir, ama web'de gerekli) */
+            max-height: 95vh; 
         }
 
         .btn-action {
